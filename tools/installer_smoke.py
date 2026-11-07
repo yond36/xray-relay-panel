@@ -10,6 +10,7 @@ import re
 import secrets
 import shutil
 import socket
+import stat
 import subprocess
 import tempfile
 import time
@@ -154,7 +155,15 @@ def main():
     stages = []
     unrelated_created = False
     node_created = False
+    opt = Path('/opt')
+    opt_info = opt.lstat()
+    if not stat.S_ISDIR(opt_info.st_mode) or opt_info.st_uid != 0:
+        raise SystemExit('Disposable fixture requires a real root-owned /opt')
+    opt_mode = stat.S_IMODE(opt_info.st_mode)
     try:
+        # Hosted runners make /opt writable for tool provisioning. Only this
+        # guarded disposable fixture adjusts it; production checks stay strict.
+        opt.chmod(opt_mode & ~0o022)
         with tempfile.TemporaryDirectory(prefix='xray-panel-ci-') as temporary:
             directory = Path(temporary)
             unrelated_config = directory / 'unrelated-config.json'
@@ -224,6 +233,7 @@ def main():
         ctl('stop', WEB_UNIT, check=False)
         if unrelated_created:
             ctl('stop', UNRELATED_UNIT, check=False)
+        opt.chmod(opt_mode)
     print(json.dumps({'status': 'passed', 'environment': 'disposable GitHub-hosted Linux/systemd', 'checks': stages}, indent=2))
 
 
