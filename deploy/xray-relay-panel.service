@@ -1,0 +1,26 @@
+# Managed by xray-relay-panel installer.
+[Unit]
+Description=Xray Relay Panel
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=xray-panel
+Group=xray-panel
+Environment=XRAY_PANEL_BIND=127.0.0.1:8080
+Environment=XRAY_PANEL_DATA=/var/lib/xray-relay-panel
+Environment=XRAY_PANEL_NODECTL=/opt/xray-relay-panel/xray-panel-nodectl
+EnvironmentFile=-/etc/xray-relay-panel/panel.env
+ExecStart=/opt/xray-relay-panel/xray-panel
+WorkingDirectory=/var/lib/xray-relay-panel
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=30
+UMask=0077
+PrivateTmp=true
+ProtectHome=true
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.27.3'
+          cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install locked frontend dependencies
+        working-directory: web
+        run: npm ci
+      - name: Build frontend and Linux AMD64
+        run: python3 -I tools/build.py --os linux --arch amd64
+      - name: Backend tests and static checks
+        run: |
+          go test ./...
+          go vet ./...
+      - name: Installer regression tests
+        run: |
+          bash -n install.sh deploy/install.sh deploy/uninstall.sh
+          python3 -I -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Check public source and versions
+        run: python3 -I tools/check_release.py
+      - name: Build Linux ARM64 and package
+        run: |
+          python3 -I tools/build.py --skip-web --os linux --arch arm64
+          python3 -I tools/package_release.py --arch amd64
+          python3 -I tools/package_release.py --arch arm64
+          python3 -I tools/package_source.py
+          python3 -I tools/verify_artifacts.py --prepare-assets
+      - name: Real systemd lifecycle smoke in disposable runner
+        run: sudo --preserve-env=GITHUB_ACTIONS,RUNNER_ENVIRONMENT,GITHUB_WORKSPACE,PATH python3 -I tools/installer_smoke.py --artifacts dist/linux-amd64 --package dist/xray-relay-panel-linux-amd64.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-files-${{ github.sha }}
+          if-no-files-found: error
+          retention-days: 7
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/*.sha256
+            dist/install.sh
+            dist/SHA256SUMS

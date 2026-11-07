@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+  publish:
+    needs: checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify release tag
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python3 -I tools/check_release.py --tag "$RELEASE_TAG"
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-files-${{ github.sha }}
+          path: release
+      - name: Prepare release notes
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python3 -I - <<'PY'
+          import os
+          from pathlib import Path
+          tag = os.environ['RELEASE_TAG']
+          Path('release-notes.md').write_text(f'''Xray Relay Panel {tag}
+
+          中文 Xray 中转面板，支持 SSH/本机节点、多用户、官方核心版本手动选择、VLESS-REALITY 默认入口和真实出口检测。
+
+          一键安装：
+          ```sh
+          curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/install.sh | sudo bash -s -- install
+          ```
+
+          默认卸载保留数据及已运行的中转：
+          ```sh
+          sudo xray-relay-panel uninstall
+          ```
+
+          Linux AMD64 / ARM64 安装包、源码和一键脚本均附 SHA-256。具体升级、清理与服务隔离说明见 README。ARM64 完成交叉构建，未进行 ARM64 实机验收。
+          ''', encoding='utf-8')
+          PY
+      - name: Publish verified release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          gh release create "$RELEASE_TAG" release/* --draft --verify-tag --title "Xray Relay Panel $RELEASE_TAG" --notes-file release-notes.md
+          gh release edit "$RELEASE_TAG" --draft=false

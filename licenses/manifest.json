@@ -1,0 +1,2969 @@
+{
+  "schema_version": 1,
+  "project_version": "0.2.2",
+  "method": "Byte-for-byte copies from exact go.mod versions in the local Go module cache and exact package-lock versions in web/node_modules; no downloads or package execution.",
+  "scope_note": "All go.mod requirements and the full non-dev npm lock graph are included conservatively; this is not a symbol-level or tree-shaken bundle inventory. Development packages are supplementary. Nested node_modules and testdata are not scanned as part of their parent packages. Embedded per-source notices may need separate review.",
+  "inputs": {
+    "go.mod": "7e11f523668b7bdef5aa17c35220bb3e1eeade54d82c21d93f5b29ed35e8e56a",
+    "web/package-lock.json": "f556114e49ad0643b63a7675592b2dc7923b12f0057481206a7cdbc163ab04bf"
+  },
+  "summary": {
+    "go_modules": 15,
+    "npm_runtime_packages": 35,
+    "npm_development_packages": 119,
+    "collected_components": 117,
+    "copied_files": 137,
+    "required_components_without_files": 0
+  },
+  "uncovered_components": [
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/aix-ppc64",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/android-arm",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/android-arm64",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/android-x64",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/darwin-arm64",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/darwin-x64",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/freebsd-arm64",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/freebsd-x64",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-arm",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-arm64",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-ia32",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-loong64",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-mips64el",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-ppc64",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-riscv64",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-s390x",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-x64",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/netbsd-arm64",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/netbsd-x64",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/openbsd-arm64",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/openbsd-x64",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/openharmony-arm64",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/sunos-x64",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/win32-arm64",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/win32-ia32",
+      "version": "0.25.12",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/win32-x64",
+      "version": "0.25.12",
+      "status": "missing_license_file"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-android-arm-eabi",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-android-arm64",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-android-x64",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-darwin-arm64",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-darwin-x64",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-freebsd-arm64",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-freebsd-x64",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-arm-gnueabihf",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-arm-musleabihf",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-arm64-gnu",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-arm64-musl",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-loong64-gnu",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-loong64-musl",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-ppc64-gnu",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-ppc64-musl",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-riscv64-gnu",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-riscv64-musl",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-s390x-gnu",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-x64-gnu",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-x64-musl",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-openbsd-x64",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-openharmony-arm64",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-win32-arm64-msvc",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-win32-ia32-msvc",
+      "version": "4.68.0",
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-win32-x64-gnu",
+      "version": "4.68.0",
+      "status": "missing_license_file"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-win32-x64-msvc",
+      "version": "4.68.0",
+      "status": "missing_license_file"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "fsevents",
+      "version": "2.3.3",
+      "status": "not_installed_locally"
+    }
+  ],
+  "components": [
+    {
+      "ecosystem": "go",
+      "name": "github.com/pkg/sftp",
+      "version": "v1.13.9",
+      "scope": "direct",
+      "license_summary": "BSD-2-Clause",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "go/github.com/pkg/sftp@v1.13.9/LICENSE",
+          "sha256": "f5b5087b8e596d015cfea7db26527fe67a196c18ca37415c288dd2534ff74c37",
+          "bytes": 1289
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "go",
+      "name": "golang.org/x/crypto",
+      "version": "v0.37.0",
+      "scope": "direct",
+      "license_summary": "BSD-3-Clause; PATENTS",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "go/golang.org/x/crypto@v0.37.0/LICENSE",
+          "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+          "bytes": 1453
+        },
+        {
+          "source": "PATENTS",
+          "file": "go/golang.org/x/crypto@v0.37.0/PATENTS",
+          "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc",
+          "bytes": 1303
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "go",
+      "name": "golang.org/x/net",
+      "version": "v0.39.0",
+      "scope": "direct",
+      "license_summary": "BSD-3-Clause; PATENTS",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "go/golang.org/x/net@v0.39.0/LICENSE",
+          "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+          "bytes": 1453
+        },
+        {
+          "source": "PATENTS",
+          "file": "go/golang.org/x/net@v0.39.0/PATENTS",
+          "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc",
+          "bytes": 1303
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "go",
+      "name": "modernc.org/sqlite",
+      "version": "v1.37.1",
+      "scope": "direct",
+      "license_summary": "BSD-3-Clause; SQLite public-domain dedication in generated source",
+      "files": [
+        {
+          "source": "AUTHORS",
+          "file": "go/modernc.org/sqlite@v1.37.1/AUTHORS",
+          "sha256": "c0e985a2bb793a4f3189093a7f6b0ec5ceba155f225a89bde86d50cb77d185b7",
+          "bytes": 1022
+        },
+        {
+          "source": "LICENSE",
+          "file": "go/modernc.org/sqlite@v1.37.1/LICENSE",
+          "sha256": "c6fe05491a60ae13bcd223088d2705e36dede24e5587226231d2459ada5c4822",
+          "bytes": 1489
+        },
+        {
+          "source": "lib/sqlite_linux_amd64.go",
+          "kind": "source_comment",
+          "source_file_sha256": "517849d5373db706e4f67718e0ef2a0b4b421a430d400e1b5818d161fc6efe83",
+          "file": "go/modernc.org/sqlite@v1.37.1/SQLITE-PUBLIC-DOMAIN-linux-amd64.txt",
+          "sha256": "e468bdf5469a2d58f99b8c53b8d8fc2c0db5a1ab5b935e42a76aa8460cb0b05a",
+          "bytes": 375
+        },
+        {
+          "source": "lib/sqlite_linux_arm64.go",
+          "kind": "source_comment",
+          "source_file_sha256": "b6d1f29fe3823cd42bec6c08ea043b23c1aa925d2d5e28060f96ba99f48399f0",
+          "file": "go/modernc.org/sqlite@v1.37.1/SQLITE-PUBLIC-DOMAIN-linux-arm64.txt",
+          "sha256": "e468bdf5469a2d58f99b8c53b8d8fc2c0db5a1ab5b935e42a76aa8460cb0b05a",
+          "bytes": 375
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "go",
+      "name": "github.com/dustin/go-humanize",
+      "version": "v1.0.1",
+      "scope": "indirect",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "go/github.com/dustin/go-humanize@v1.0.1/LICENSE",
+          "sha256": "a973b4498c13eb74baa2a8e5c351426a6826f2fcdd909916dbe53ee2e755fd71",
+          "bytes": 1136
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "go",
+      "name": "github.com/google/uuid",
+      "version": "v1.6.0",
+      "scope": "indirect",
+      "license_summary": "BSD-3-Clause",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "go/github.com/google/uuid@v1.6.0/LICENSE",
+          "sha256": "0a8d61ed3cbfd5312326e8126c31ce9c627a283adc99131b56896d29ada04b2d",
+          "bytes": 1480
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "go",
+      "name": "github.com/kr/fs",
+      "version": "v0.1.0",
+      "scope": "indirect",
+      "license_summary": "BSD-3-Clause",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "go/github.com/kr/fs@v0.1.0/LICENSE",
+          "sha256": "dd26a7abddd02e2d0aba97805b31f248ef7835d9e10da289b22e3b8ab78b324d",
+          "bytes": 1479
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "go",
+      "name": "github.com/mattn/go-isatty",
+      "version": "v0.0.20",
+      "scope": "indirect",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "go/github.com/mattn/go-isatty@v0.0.20/LICENSE",
+          "sha256": "08eab1118c80885fa1fa6a6dd7303f65a379fcb3733e063d20d1bbc2c76e6fa1",
+          "bytes": 1099
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "go",
+      "name": "github.com/ncruces/go-strftime",
+      "version": "v0.1.9",
+      "scope": "indirect",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "go/github.com/ncruces/go-strftime@v0.1.9/LICENSE",
+          "sha256": "38ae43959daf953a393a585b2988672cb65a5a541aca0d0be5e72595a0a16883",
+          "bytes": 1068
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "go",
+      "name": "github.com/remyoudompheng/bigfft",
+      "version": "v0.0.0-20230129092748-24d4a6f8daec",
+      "scope": "indirect",
+      "license_summary": "BSD-3-Clause",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "go/github.com/remyoudompheng/bigfft@v0.0.0-20230129092748-24d4a6f8daec/LICENSE",
+          "sha256": "dd26a7abddd02e2d0aba97805b31f248ef7835d9e10da289b22e3b8ab78b324d",
+          "bytes": 1479
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "go",
+      "name": "golang.org/x/exp",
+      "version": "v0.0.0-20250408133849-7e4ce0ab07d0",
+      "scope": "indirect",
+      "license_summary": "BSD-3-Clause; PATENTS",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "go/golang.org/x/exp@v0.0.0-20250408133849-7e4ce0ab07d0/LICENSE",
+          "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+          "bytes": 1453
+        },
+        {
+          "source": "PATENTS",
+          "file": "go/golang.org/x/exp@v0.0.0-20250408133849-7e4ce0ab07d0/PATENTS",
+          "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc",
+          "bytes": 1303
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "go",
+      "name": "golang.org/x/sys",
+      "version": "v0.33.0",
+      "scope": "indirect",
+      "license_summary": "BSD-3-Clause; PATENTS",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "go/golang.org/x/sys@v0.33.0/LICENSE",
+          "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+          "bytes": 1453
+        },
+        {
+          "source": "PATENTS",
+          "file": "go/golang.org/x/sys@v0.33.0/PATENTS",
+          "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc",
+          "bytes": 1303
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "go",
+      "name": "modernc.org/libc",
+      "version": "v1.65.7",
+      "scope": "indirect",
+      "license_summary": "BSD-3-Clause; MIT and other notices in COPYRIGHT-MUSL; embedded netdb MIT",
+      "files": [
+        {
+          "source": "AUTHORS",
+          "file": "go/modernc.org/libc@v1.65.7/AUTHORS",
+          "sha256": "2f1ee22afa1d2baf922047fa997e0ac3550b25c73882fa019d00d9d58ba0b63d",
+          "bytes": 694
+        },
+        {
+          "source": "COPYRIGHT-MUSL",
+          "file": "go/modernc.org/libc@v1.65.7/COPYRIGHT-MUSL",
+          "sha256": "f9bc4423732350eb0b3f7ed7e91d530298476f8fec0c6c427a1c04ade22655af",
+          "bytes": 6204
+        },
+        {
+          "source": "LICENSE",
+          "file": "go/modernc.org/libc@v1.65.7/LICENSE",
+          "sha256": "95ff867eb55a56935fa7492406cfa953fb7c13ca73f4c0a86ae05756b4605600",
+          "bytes": 1482
+        },
+        {
+          "source": "LICENSE-GO",
+          "file": "go/modernc.org/libc@v1.65.7/LICENSE-GO",
+          "sha256": "2d36597f7117c38b006835ae7f537487207d8ec407aa9d9980794b2030cbc067",
+          "bytes": 1479
+        },
+        {
+          "source": "honnef.co/go/netdb/LICENSE",
+          "file": "go/modernc.org/libc@v1.65.7/honnef.co/go/netdb/LICENSE",
+          "sha256": "657707d00e00d3077e4ccfac2d6a123ad908c3f503370798eb2cb52e68e135a6",
+          "bytes": 1058
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "go",
+      "name": "modernc.org/mathutil",
+      "version": "v1.7.1",
+      "scope": "indirect",
+      "license_summary": "BSD-3-Clause; mersenne BSD-3-Clause",
+      "files": [
+        {
+          "source": "AUTHORS",
+          "file": "go/modernc.org/mathutil@v1.7.1/AUTHORS",
+          "sha256": "51fcdd68bb605f080283bb6eabb72452591289650599d3d67603381834e536af",
+          "bytes": 412
+        },
+        {
+          "source": "LICENSE",
+          "file": "go/modernc.org/mathutil@v1.7.1/LICENSE",
+          "sha256": "bfa9bf72a72ca009fd62a8f84fca3dca67e51d93af96352723646599898b6cf5",
+          "bytes": 1486
+        },
+        {
+          "source": "mersenne/AUTHORS",
+          "file": "go/modernc.org/mathutil@v1.7.1/mersenne/AUTHORS",
+          "sha256": "f79ff8b413938c3ce7c60db12242a663d8e840249bd838fcf58f4aaccfec5454",
+          "bytes": 346
+        },
+        {
+          "source": "mersenne/LICENSE",
+          "file": "go/modernc.org/mathutil@v1.7.1/mersenne/LICENSE",
+          "sha256": "c05630f9ca899ea094620d37daea6ba66f99adbf9268ea5fea9db607e1102bd9",
+          "bytes": 1486
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "go",
+      "name": "modernc.org/memory",
+      "version": "v1.11.0",
+      "scope": "indirect",
+      "license_summary": "BSD-3-Clause and supplementary LICENSE-* files",
+      "files": [
+        {
+          "source": "AUTHORS",
+          "file": "go/modernc.org/memory@v1.11.0/AUTHORS",
+          "sha256": "df1f424436f279309de85b82e494d548297a2570e9b5794630d7e72c9eb50b6a",
+          "bytes": 529
+        },
+        {
+          "source": "LICENSE",
+          "file": "go/modernc.org/memory@v1.11.0/LICENSE",
+          "sha256": "59895e669f48f168b6b858358f6005779cdf40a265f7828813061b56af67b496",
+          "bytes": 1484
+        },
+        {
+          "source": "LICENSE-GO",
+          "file": "go/modernc.org/memory@v1.11.0/LICENSE-GO",
+          "sha256": "2d36597f7117c38b006835ae7f537487207d8ec407aa9d9980794b2030cbc067",
+          "bytes": 1479
+        },
+        {
+          "source": "LICENSE-LOGO",
+          "file": "go/modernc.org/memory@v1.11.0/LICENSE-LOGO",
+          "sha256": "5ae5bee3072a841376451b48d8cfcec7188e10543926d5870828d36c8a750dc5",
+          "bytes": 62
+        },
+        {
+          "source": "LICENSE-MMAP-GO",
+          "file": "go/modernc.org/memory@v1.11.0/LICENSE-MMAP-GO",
+          "sha256": "c2eba69f20d05414538c3a5df7694dde392e065ff70882e1625e90f5d6659fff",
+          "bytes": 1518
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/code-frame",
+      "version": "7.29.7",
+      "scope": "development",
+      "lock_path": "node_modules/@babel/code-frame",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@babel/code-frame@7.29.7/LICENSE",
+          "sha256": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76",
+          "bytes": 1106
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/compat-data",
+      "version": "7.29.7",
+      "scope": "development",
+      "lock_path": "node_modules/@babel/compat-data",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@babel/compat-data@7.29.7/LICENSE",
+          "sha256": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76",
+          "bytes": 1106
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/core",
+      "version": "7.29.13",
+      "scope": "development",
+      "lock_path": "node_modules/@babel/core",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@babel/core@7.29.13/LICENSE",
+          "sha256": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76",
+          "bytes": 1106
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/generator",
+      "version": "7.29.13",
+      "scope": "development",
+      "lock_path": "node_modules/@babel/generator",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@babel/generator@7.29.13/LICENSE",
+          "sha256": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76",
+          "bytes": 1106
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/helper-compilation-targets",
+      "version": "7.29.13",
+      "scope": "development",
+      "lock_path": "node_modules/@babel/helper-compilation-targets",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@babel/helper-compilation-targets@7.29.13/LICENSE",
+          "sha256": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76",
+          "bytes": 1106
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/helper-globals",
+      "version": "7.29.7",
+      "scope": "development",
+      "lock_path": "node_modules/@babel/helper-globals",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@babel/helper-globals@7.29.7/LICENSE",
+          "sha256": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76",
+          "bytes": 1106
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/helper-module-imports",
+      "version": "7.29.7",
+      "scope": "development",
+      "lock_path": "node_modules/@babel/helper-module-imports",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@babel/helper-module-imports@7.29.7/LICENSE",
+          "sha256": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76",
+          "bytes": 1106
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/helper-module-transforms",
+      "version": "7.29.13",
+      "scope": "development",
+      "lock_path": "node_modules/@babel/helper-module-transforms",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@babel/helper-module-transforms@7.29.13/LICENSE",
+          "sha256": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76",
+          "bytes": 1106
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/helper-plugin-utils",
+      "version": "7.29.7",
+      "scope": "development",
+      "lock_path": "node_modules/@babel/helper-plugin-utils",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@babel/helper-plugin-utils@7.29.7/LICENSE",
+          "sha256": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76",
+          "bytes": 1106
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/helper-string-parser",
+      "version": "7.29.13",
+      "scope": "development",
+      "lock_path": "node_modules/@babel/helper-string-parser",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@babel/helper-string-parser@7.29.13/LICENSE",
+          "sha256": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76",
+          "bytes": 1106
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/helper-validator-identifier",
+      "version": "7.29.7",
+      "scope": "development",
+      "lock_path": "node_modules/@babel/helper-validator-identifier",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@babel/helper-validator-identifier@7.29.7/LICENSE",
+          "sha256": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76",
+          "bytes": 1106
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/helper-validator-option",
+      "version": "7.29.7",
+      "scope": "development",
+      "lock_path": "node_modules/@babel/helper-validator-option",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@babel/helper-validator-option@7.29.7/LICENSE",
+          "sha256": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76",
+          "bytes": 1106
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/helpers",
+      "version": "7.29.13",
+      "scope": "development",
+      "lock_path": "node_modules/@babel/helpers",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@babel/helpers@7.29.13/LICENSE",
+          "sha256": "4be9d87b56a306293223b490c0d0b245e9e94f39884147bf051a6c7b825aeb30",
+          "bytes": 1189
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/parser",
+      "version": "7.29.13",
+      "scope": "development",
+      "lock_path": "node_modules/@babel/parser",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@babel/parser@7.29.13/LICENSE",
+          "sha256": "2e97627cb278aa7556fb9e8817368302301a595b6c7582512b8d74c57b773652",
+          "bytes": 1086
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/plugin-transform-react-jsx-self",
+      "version": "7.29.7",
+      "scope": "development",
+      "lock_path": "node_modules/@babel/plugin-transform-react-jsx-self",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@babel/plugin-transform-react-jsx-self@7.29.7/LICENSE",
+          "sha256": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76",
+          "bytes": 1106
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/plugin-transform-react-jsx-source",
+      "version": "7.29.7",
+      "scope": "development",
+      "lock_path": "node_modules/@babel/plugin-transform-react-jsx-source",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@babel/plugin-transform-react-jsx-source@7.29.7/LICENSE",
+          "sha256": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76",
+          "bytes": 1106
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/template",
+      "version": "7.29.7",
+      "scope": "development",
+      "lock_path": "node_modules/@babel/template",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@babel/template@7.29.7/LICENSE",
+          "sha256": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76",
+          "bytes": 1106
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/traverse",
+      "version": "7.29.13",
+      "scope": "development",
+      "lock_path": "node_modules/@babel/traverse",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@babel/traverse@7.29.13/LICENSE",
+          "sha256": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76",
+          "bytes": 1106
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/types",
+      "version": "7.29.11",
+      "scope": "development",
+      "lock_path": "node_modules/@babel/types",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@babel/types@7.29.11/LICENSE",
+          "sha256": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76",
+          "bytes": 1106
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/aix-ppc64",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/aix-ppc64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/android-arm",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/android-arm",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/android-arm64",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/android-arm64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/android-x64",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/android-x64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/darwin-arm64",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/darwin-arm64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/darwin-x64",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/darwin-x64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/freebsd-arm64",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/freebsd-arm64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/freebsd-x64",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/freebsd-x64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-arm",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/linux-arm",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-arm64",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/linux-arm64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-ia32",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/linux-ia32",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-loong64",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/linux-loong64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-mips64el",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/linux-mips64el",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-ppc64",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/linux-ppc64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-riscv64",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/linux-riscv64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-s390x",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/linux-s390x",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-x64",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/linux-x64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/netbsd-arm64",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/netbsd-arm64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/netbsd-x64",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/netbsd-x64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/openbsd-arm64",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/openbsd-arm64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/openbsd-x64",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/openbsd-x64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/openharmony-arm64",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/openharmony-arm64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/sunos-x64",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/sunos-x64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/win32-arm64",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/win32-arm64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/win32-ia32",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/win32-ia32",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/win32-x64",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/@esbuild/win32-x64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "missing_license_file"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@jridgewell/gen-mapping",
+      "version": "0.3.13",
+      "scope": "development",
+      "lock_path": "node_modules/@jridgewell/gen-mapping",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@jridgewell/gen-mapping@0.3.13/LICENSE",
+          "sha256": "769d154fbde32a915af110b1123650bc79f4cbe675acc66e005265bf069c6c6c",
+          "bytes": 1080
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@jridgewell/remapping",
+      "version": "2.3.5",
+      "scope": "development",
+      "lock_path": "node_modules/@jridgewell/remapping",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@jridgewell/remapping@2.3.5/LICENSE",
+          "sha256": "769d154fbde32a915af110b1123650bc79f4cbe675acc66e005265bf069c6c6c",
+          "bytes": 1080
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@jridgewell/resolve-uri",
+      "version": "3.1.2",
+      "scope": "development",
+      "lock_path": "node_modules/@jridgewell/resolve-uri",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@jridgewell/resolve-uri@3.1.2/LICENSE",
+          "sha256": "b8778b155bfde5a28b023a558753c0fa058a52bb9de35c343c250be1bbcdedab",
+          "bytes": 1079
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@jridgewell/sourcemap-codec",
+      "version": "1.6.0",
+      "scope": "development",
+      "lock_path": "node_modules/@jridgewell/sourcemap-codec",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@jridgewell/sourcemap-codec@1.6.0/LICENSE",
+          "sha256": "769d154fbde32a915af110b1123650bc79f4cbe675acc66e005265bf069c6c6c",
+          "bytes": 1080
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@jridgewell/trace-mapping",
+      "version": "0.3.31",
+      "scope": "development",
+      "lock_path": "node_modules/@jridgewell/trace-mapping",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@jridgewell/trace-mapping@0.3.31/LICENSE",
+          "sha256": "769d154fbde32a915af110b1123650bc79f4cbe675acc66e005265bf069c6c6c",
+          "bytes": 1080
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rolldown/pluginutils",
+      "version": "1.0.0-beta.27",
+      "scope": "development",
+      "lock_path": "node_modules/@rolldown/pluginutils",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@rolldown/pluginutils@1.0.0-beta.27/LICENSE",
+          "sha256": "23ecfff35a5a2e80d92142f75228912c3b1abc4b5a8337a821ff4397e2f9f734",
+          "bytes": 1302
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-android-arm-eabi",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-android-arm-eabi",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-android-arm64",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-android-arm64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-android-x64",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-android-x64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-darwin-arm64",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-darwin-arm64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-darwin-x64",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-darwin-x64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-freebsd-arm64",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-freebsd-arm64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-freebsd-x64",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-freebsd-x64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-arm-gnueabihf",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-linux-arm-gnueabihf",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-arm-musleabihf",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-linux-arm-musleabihf",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-arm64-gnu",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-linux-arm64-gnu",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-arm64-musl",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-linux-arm64-musl",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-loong64-gnu",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-linux-loong64-gnu",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-loong64-musl",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-linux-loong64-musl",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-ppc64-gnu",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-linux-ppc64-gnu",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-ppc64-musl",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-linux-ppc64-musl",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-riscv64-gnu",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-linux-riscv64-gnu",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-riscv64-musl",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-linux-riscv64-musl",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-s390x-gnu",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-linux-s390x-gnu",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-x64-gnu",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-linux-x64-gnu",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-x64-musl",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-linux-x64-musl",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-openbsd-x64",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-openbsd-x64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-openharmony-arm64",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-openharmony-arm64",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-win32-arm64-msvc",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-win32-arm64-msvc",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-win32-ia32-msvc",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-win32-ia32-msvc",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-win32-x64-gnu",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-win32-x64-gnu",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "missing_license_file"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-win32-x64-msvc",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/@rollup/rollup-win32-x64-msvc",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "missing_license_file"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/babel__core",
+      "version": "7.20.5",
+      "scope": "development",
+      "lock_path": "node_modules/@types/babel__core",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@types/babel__core@7.20.5/LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "bytes": 1141
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/babel__generator",
+      "version": "7.27.0",
+      "scope": "development",
+      "lock_path": "node_modules/@types/babel__generator",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@types/babel__generator@7.27.0/LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "bytes": 1141
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/babel__template",
+      "version": "7.4.4",
+      "scope": "development",
+      "lock_path": "node_modules/@types/babel__template",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@types/babel__template@7.4.4/LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "bytes": 1141
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/babel__traverse",
+      "version": "7.28.0",
+      "scope": "development",
+      "lock_path": "node_modules/@types/babel__traverse",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@types/babel__traverse@7.28.0/LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "bytes": 1141
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/estree",
+      "version": "1.0.10",
+      "scope": "development",
+      "lock_path": "node_modules/@types/estree",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@types/estree@1.0.10/LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "bytes": 1141
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/node",
+      "version": "22.20.5",
+      "scope": "development",
+      "lock_path": "node_modules/@types/node",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@types/node@22.20.5/LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "bytes": 1141
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/prop-types",
+      "version": "15.7.15",
+      "scope": "development",
+      "lock_path": "node_modules/@types/prop-types",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@types/prop-types@15.7.15/LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "bytes": 1141
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/qrcode",
+      "version": "1.5.6",
+      "scope": "development",
+      "lock_path": "node_modules/@types/qrcode",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@types/qrcode@1.5.6/LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "bytes": 1141
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/react",
+      "version": "18.3.31",
+      "scope": "development",
+      "lock_path": "node_modules/@types/react",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@types/react@18.3.31/LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "bytes": 1141
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/react-dom",
+      "version": "18.3.7",
+      "scope": "development",
+      "lock_path": "node_modules/@types/react-dom",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@types/react-dom@18.3.7/LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "bytes": 1141
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@vitejs/plugin-react",
+      "version": "4.7.0",
+      "scope": "development",
+      "lock_path": "node_modules/@vitejs/plugin-react",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/@vitejs/plugin-react@4.7.0/LICENSE",
+          "sha256": "29b68325fe026047d13e187b44c33b2acacf7dc647dec4583702e59f235e13b5",
+          "bytes": 1103
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "ansi-regex",
+      "version": "5.0.1",
+      "scope": "runtime",
+      "lock_path": "node_modules/ansi-regex",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "license",
+          "file": "npm/ansi-regex@5.0.1/license",
+          "sha256": "48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0",
+          "bytes": 1109
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "ansi-styles",
+      "version": "4.3.0",
+      "scope": "runtime",
+      "lock_path": "node_modules/ansi-styles",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "license",
+          "file": "npm/ansi-styles@4.3.0/license",
+          "sha256": "48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0",
+          "bytes": 1109
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "baseline-browser-mapping",
+      "version": "2.11.35",
+      "scope": "development",
+      "lock_path": "node_modules/baseline-browser-mapping",
+      "license_summary": "Apache-2.0",
+      "files": [
+        {
+          "source": "LICENSE.txt",
+          "file": "npm/baseline-browser-mapping@2.11.35/LICENSE.txt",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "bytes": 11357
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "browserslist",
+      "version": "4.29.5",
+      "scope": "development",
+      "lock_path": "node_modules/browserslist",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/browserslist@4.29.5/LICENSE",
+          "sha256": "21c2679a63d7699c0e644409e2f17d0adbc7a965003feb06b3ff4b833d21f722",
+          "bytes": 1118
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "camelcase",
+      "version": "5.3.1",
+      "scope": "runtime",
+      "lock_path": "node_modules/camelcase",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "license",
+          "file": "npm/camelcase@5.3.1/license",
+          "sha256": "48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0",
+          "bytes": 1109
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "caniuse-lite",
+      "version": "1.0.30001823",
+      "scope": "development",
+      "lock_path": "node_modules/caniuse-lite",
+      "license_summary": "CC-BY-4.0",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/caniuse-lite@1.0.30001823/LICENSE",
+          "sha256": "fd3a263fe19ed8faa9068b43abaebafc02c77897b0c6fc09abc04bb592e5f16e",
+          "bytes": 18651
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "cliui",
+      "version": "6.0.0",
+      "scope": "runtime",
+      "lock_path": "node_modules/cliui",
+      "license_summary": "ISC",
+      "files": [
+        {
+          "source": "LICENSE.txt",
+          "file": "npm/cliui@6.0.0/LICENSE.txt",
+          "sha256": "2dc0465729366c3a7890dfa9e972a1ba7048a26c02116fb8b419a6a1ac110149",
+          "bytes": 731
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "color-convert",
+      "version": "2.0.1",
+      "scope": "runtime",
+      "lock_path": "node_modules/color-convert",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/color-convert@2.0.1/LICENSE",
+          "sha256": "693866fc419c6f61c8570438ec00659d156ec2b4d4a4d04091711f5f11a365d4",
+          "bytes": 1087
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "color-name",
+      "version": "1.1.4",
+      "scope": "runtime",
+      "lock_path": "node_modules/color-name",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/color-name@1.1.4/LICENSE",
+          "sha256": "c064f7a3e353bc1bc977f3c897941c75ef763f44f41677e0a15370ca0853d6e2",
+          "bytes": 1085
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "convert-source-map",
+      "version": "2.0.0",
+      "scope": "development",
+      "lock_path": "node_modules/convert-source-map",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/convert-source-map@2.0.0/LICENSE",
+          "sha256": "1fa6ee8bb95a81ae3d73a5bd074a3ac380ffec13697051063ca1a601921b91db",
+          "bytes": 1078
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "csstype",
+      "version": "3.2.3",
+      "scope": "development",
+      "lock_path": "node_modules/csstype",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/csstype@3.2.3/LICENSE",
+          "sha256": "11d55bd4541c75ee7879547ac49089c489163dae49551389713c3d026cab383e",
+          "bytes": 1062
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "debug",
+      "version": "4.4.3",
+      "scope": "development",
+      "lock_path": "node_modules/debug",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/debug@4.4.3/LICENSE",
+          "sha256": "3a61c6c96caf5c1d9b623fb9b04c822b783dfcb78aa7e49c76a3f643e6ed7f95",
+          "bytes": 1139
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "decamelize",
+      "version": "1.2.0",
+      "scope": "runtime",
+      "lock_path": "node_modules/decamelize",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "license",
+          "file": "npm/decamelize@1.2.0/license",
+          "sha256": "6fb9754611c20f6649f68805e8c990e83261f29316e29de9e6cedae607b8634c",
+          "bytes": 1119
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "dijkstrajs",
+      "version": "1.0.3",
+      "scope": "runtime",
+      "lock_path": "node_modules/dijkstrajs",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE.md",
+          "file": "npm/dijkstrajs@1.0.3/LICENSE.md",
+          "sha256": "c46324e45a005413535a6fb7a97e9eacd3cc6bf30335b7d5c10b8ee3af9e60c2",
+          "bytes": 714
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "electron-to-chromium",
+      "version": "1.5.478",
+      "scope": "development",
+      "lock_path": "node_modules/electron-to-chromium",
+      "license_summary": "ISC",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/electron-to-chromium@1.5.478/LICENSE",
+          "sha256": "25ba5c59dad3e0dd8f9540beaa0f0a86a10e3aec35af5fdc8e88c5f6a5c0d8c6",
+          "bytes": 728
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "emoji-regex",
+      "version": "8.0.0",
+      "scope": "runtime",
+      "lock_path": "node_modules/emoji-regex",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE-MIT.txt",
+          "file": "npm/emoji-regex@8.0.0/LICENSE-MIT.txt",
+          "sha256": "483acb265f182907d1caf6cff9c16c96f31325ed23792832cc5d8b12d5f88c8a",
+          "bytes": 1077
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "esbuild",
+      "version": "0.25.12",
+      "scope": "development",
+      "lock_path": "node_modules/esbuild",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE.md",
+          "file": "npm/esbuild@0.25.12/LICENSE.md",
+          "sha256": "b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681",
+          "bytes": 1069
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "escalade",
+      "version": "3.2.0",
+      "scope": "development",
+      "lock_path": "node_modules/escalade",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "license",
+          "file": "npm/escalade@3.2.0/license",
+          "sha256": "9a9edad7baae52622bddf3c15b2ef8a33d2c89f2d25408ad13e8a7481c6b0c97",
+          "bytes": 1104
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "fdir",
+      "version": "6.5.0",
+      "scope": "development",
+      "lock_path": "node_modules/fdir",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/fdir@6.5.0/LICENSE",
+          "sha256": "9a39f2aadab11a3697edd668ff2d8ad885b649737b7ab4d3bf12b34e5ada0c86",
+          "bytes": 1053
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "find-up",
+      "version": "4.1.0",
+      "scope": "runtime",
+      "lock_path": "node_modules/find-up",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "license",
+          "file": "npm/find-up@4.1.0/license",
+          "sha256": "48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0",
+          "bytes": 1109
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "fsevents",
+      "version": "2.3.3",
+      "scope": "development",
+      "lock_path": "node_modules/fsevents",
+      "license_summary": "MIT",
+      "files": [],
+      "status": "not_installed_locally"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "gensync",
+      "version": "1.0.0-beta.2",
+      "scope": "development",
+      "lock_path": "node_modules/gensync",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/gensync@1.0.0-beta.2/LICENSE",
+          "sha256": "e3a956681ee067f971ac413994171b3d90ca801ec6324e76c9c55366cfe31cb0",
+          "bytes": 1075
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "get-caller-file",
+      "version": "2.0.5",
+      "scope": "runtime",
+      "lock_path": "node_modules/get-caller-file",
+      "license_summary": "ISC",
+      "files": [
+        {
+          "source": "LICENSE.md",
+          "file": "npm/get-caller-file@2.0.5/LICENSE.md",
+          "sha256": "902dbb4154679fb2b8d7c33878183f45b268d01eae5e5033dddaa8852d45f213",
+          "bytes": 745
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "is-fullwidth-code-point",
+      "version": "3.0.0",
+      "scope": "runtime",
+      "lock_path": "node_modules/is-fullwidth-code-point",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "license",
+          "file": "npm/is-fullwidth-code-point@3.0.0/license",
+          "sha256": "48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0",
+          "bytes": 1109
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "js-tokens",
+      "version": "4.0.0",
+      "scope": "runtime",
+      "lock_path": "node_modules/js-tokens",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/js-tokens@4.0.0/LICENSE",
+          "sha256": "2213d91c606205c71eb051a199478cdc2adde945893404d7f1421436dd6d5cc1",
+          "bytes": 1103
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "jsesc",
+      "version": "3.1.0",
+      "scope": "development",
+      "lock_path": "node_modules/jsesc",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE-MIT.txt",
+          "file": "npm/jsesc@3.1.0/LICENSE-MIT.txt",
+          "sha256": "483acb265f182907d1caf6cff9c16c96f31325ed23792832cc5d8b12d5f88c8a",
+          "bytes": 1077
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "json5",
+      "version": "2.2.3",
+      "scope": "development",
+      "lock_path": "node_modules/json5",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE.md",
+          "file": "npm/json5@2.2.3/LICENSE.md",
+          "sha256": "53e59feb13058722d977c699eb0407c7bce2f93c949b681bbd2ff31698535927",
+          "bytes": 1145
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "locate-path",
+      "version": "5.0.0",
+      "scope": "runtime",
+      "lock_path": "node_modules/locate-path",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "license",
+          "file": "npm/locate-path@5.0.0/license",
+          "sha256": "48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0",
+          "bytes": 1109
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "loose-envify",
+      "version": "1.4.0",
+      "scope": "runtime",
+      "lock_path": "node_modules/loose-envify",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/loose-envify@1.4.0/LICENSE",
+          "sha256": "4eb7543b08d955a6d23fcc224601d43ff566e775be918805e26210d7f6eb4893",
+          "bytes": 1100
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "lru-cache",
+      "version": "5.1.1",
+      "scope": "development",
+      "lock_path": "node_modules/lru-cache",
+      "license_summary": "ISC",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/lru-cache@5.1.1/LICENSE",
+          "sha256": "4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b",
+          "bytes": 765
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "lucide-react",
+      "version": "0.468.0",
+      "scope": "runtime",
+      "lock_path": "node_modules/lucide-react",
+      "license_summary": "ISC",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/lucide-react@0.468.0/LICENSE",
+          "sha256": "1e7290b35280a048667bbf0ebabac1c7fd52a75300e8b2946ac165715997f2bc",
+          "bytes": 880
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "ms",
+      "version": "2.1.3",
+      "scope": "development",
+      "lock_path": "node_modules/ms",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "license.md",
+          "file": "npm/ms@2.1.3/license.md",
+          "sha256": "1662fae9b5314d11cf51284e2dcd1f006a354f7343f08712a730fcff9a359801",
+          "bytes": 1079
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "nanoid",
+      "version": "3.3.20",
+      "scope": "development",
+      "lock_path": "node_modules/nanoid",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/nanoid@3.3.20/LICENSE",
+          "sha256": "da4db1480d9beea3483a2eda5c53b22238d0827d57da162b48f122e04d2d9987",
+          "bytes": 1095
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "node-releases",
+      "version": "2.0.63",
+      "scope": "development",
+      "lock_path": "node_modules/node-releases",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/node-releases@2.0.63/LICENSE",
+          "sha256": "3706296ed611888111ceccc1dff4712844dea4bde0b185c82d718c3b69895abe",
+          "bytes": 1107
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "p-limit",
+      "version": "2.3.0",
+      "scope": "runtime",
+      "lock_path": "node_modules/p-limit",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "license",
+          "file": "npm/p-limit@2.3.0/license",
+          "sha256": "48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0",
+          "bytes": 1109
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "p-locate",
+      "version": "4.1.0",
+      "scope": "runtime",
+      "lock_path": "node_modules/p-locate",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "license",
+          "file": "npm/p-locate@4.1.0/license",
+          "sha256": "48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0",
+          "bytes": 1109
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "p-try",
+      "version": "2.2.0",
+      "scope": "runtime",
+      "lock_path": "node_modules/p-try",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "license",
+          "file": "npm/p-try@2.2.0/license",
+          "sha256": "48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0",
+          "bytes": 1109
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "path-exists",
+      "version": "4.0.0",
+      "scope": "runtime",
+      "lock_path": "node_modules/path-exists",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "license",
+          "file": "npm/path-exists@4.0.0/license",
+          "sha256": "48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0",
+          "bytes": 1109
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "picocolors",
+      "version": "1.1.1",
+      "scope": "development",
+      "lock_path": "node_modules/picocolors",
+      "license_summary": "ISC",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/picocolors@1.1.1/LICENSE",
+          "sha256": "6582629e2979466878f6014313dcc2f3756c9616148682227ce3063dde310750",
+          "bytes": 787
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "picomatch",
+      "version": "4.0.7",
+      "scope": "development",
+      "lock_path": "node_modules/picomatch",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/picomatch@4.0.7/LICENSE",
+          "sha256": "d0cd141b0c322fded5dfad1d4645bb2fedfc05b7321fe1009469638190d59ef9",
+          "bytes": 1091
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "pngjs",
+      "version": "5.0.0",
+      "scope": "runtime",
+      "lock_path": "node_modules/pngjs",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/pngjs@5.0.0/LICENSE",
+          "sha256": "176b07a18c0bb3836aaeb61088fd0bf11a38f66e6f15e3fbda85faa225250d6e",
+          "bytes": 1151
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "postcss",
+      "version": "8.5.32",
+      "scope": "development",
+      "lock_path": "node_modules/postcss",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/postcss@8.5.32/LICENSE",
+          "sha256": "5be1f3465bba68a626777f984878814aaf35e7ef8e9fd314d469bcf887050fb8",
+          "bytes": 1095
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "qrcode",
+      "version": "1.5.4",
+      "scope": "runtime",
+      "lock_path": "node_modules/qrcode",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "license",
+          "file": "npm/qrcode@1.5.4/license",
+          "sha256": "8df47c6ad9ac2c41eb9b2a72def9908959da0ede8dadd56c7b249c1bdb0c5ce6",
+          "bytes": 1076
+        },
+        {
+          "source": "lib/core/qrcode.js",
+          "kind": "source_comment",
+          "source_file_sha256": "216e490908ed95df74992a05d44efa35ea7bc8dcab27b49b446725964704e833",
+          "file": "npm/qrcode@1.5.4/SOURCE-COPYRIGHT-qrcode.txt",
+          "sha256": "3285e62b1f8a74e29c926dd7f276b31160e54044db1c9e9f255a56afa5507cad",
+          "bytes": 682
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "react",
+      "version": "18.3.1",
+      "scope": "runtime",
+      "lock_path": "node_modules/react",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/react@18.3.1/LICENSE",
+          "sha256": "52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85",
+          "bytes": 1086
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "react-dom",
+      "version": "18.3.1",
+      "scope": "runtime",
+      "lock_path": "node_modules/react-dom",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/react-dom@18.3.1/LICENSE",
+          "sha256": "52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85",
+          "bytes": 1086
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "react-refresh",
+      "version": "0.17.0",
+      "scope": "development",
+      "lock_path": "node_modules/react-refresh",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/react-refresh@0.17.0/LICENSE",
+          "sha256": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93",
+          "bytes": 1088
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "require-directory",
+      "version": "2.1.1",
+      "scope": "runtime",
+      "lock_path": "node_modules/require-directory",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/require-directory@2.1.1/LICENSE",
+          "sha256": "a92e52eb1fa7cd746e3827bf01d3a3589bbc8e1e51348b1da042aad165525ad1",
+          "bytes": 1099
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "require-main-filename",
+      "version": "2.0.0",
+      "scope": "runtime",
+      "lock_path": "node_modules/require-main-filename",
+      "license_summary": "ISC",
+      "files": [
+        {
+          "source": "LICENSE.txt",
+          "file": "npm/require-main-filename@2.0.0/LICENSE.txt",
+          "sha256": "365496ca1f56da40b23c9815fc40fa9005847b2f8f8fd1c1a4929ef25ec8cd1d",
+          "bytes": 731
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "rollup",
+      "version": "4.68.0",
+      "scope": "development",
+      "lock_path": "node_modules/rollup",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE.md",
+          "file": "npm/rollup@4.68.0/LICENSE.md",
+          "sha256": "fa1bd040c5bdeefe65b3821cebf474f2733ce65df13089bd151dda1778e62fe8",
+          "bytes": 35231
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "scheduler",
+      "version": "0.23.2",
+      "scope": "runtime",
+      "lock_path": "node_modules/scheduler",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/scheduler@0.23.2/LICENSE",
+          "sha256": "52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85",
+          "bytes": 1086
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "semver",
+      "version": "6.3.2",
+      "scope": "development",
+      "lock_path": "node_modules/semver",
+      "license_summary": "ISC",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/semver@6.3.2/LICENSE",
+          "sha256": "4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b",
+          "bytes": 765
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "set-blocking",
+      "version": "2.0.0",
+      "scope": "runtime",
+      "lock_path": "node_modules/set-blocking",
+      "license_summary": "ISC",
+      "files": [
+        {
+          "source": "LICENSE.txt",
+          "file": "npm/set-blocking@2.0.0/LICENSE.txt",
+          "sha256": "365496ca1f56da40b23c9815fc40fa9005847b2f8f8fd1c1a4929ef25ec8cd1d",
+          "bytes": 731
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "source-map-js",
+      "version": "1.2.2",
+      "scope": "development",
+      "lock_path": "node_modules/source-map-js",
+      "license_summary": "BSD-3-Clause",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/source-map-js@1.2.2/LICENSE",
+          "sha256": "6cb0631f71c7749763fd3dd1d5bee52dd1070ec17f2edc1710079ad070bd2fbd",
+          "bytes": 1526
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "string-width",
+      "version": "4.2.3",
+      "scope": "runtime",
+      "lock_path": "node_modules/string-width",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "license",
+          "file": "npm/string-width@4.2.3/license",
+          "sha256": "48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0",
+          "bytes": 1109
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "strip-ansi",
+      "version": "6.0.1",
+      "scope": "runtime",
+      "lock_path": "node_modules/strip-ansi",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "license",
+          "file": "npm/strip-ansi@6.0.1/license",
+          "sha256": "48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0",
+          "bytes": 1109
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "tinyglobby",
+      "version": "0.2.17",
+      "scope": "development",
+      "lock_path": "node_modules/tinyglobby",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/tinyglobby@0.2.17/LICENSE",
+          "sha256": "22c68811e174cbbfb3813d4135918df4f540959c14d872e601d9abe83d3cde8f",
+          "bytes": 1076
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "typescript",
+      "version": "5.7.3",
+      "scope": "development",
+      "lock_path": "node_modules/typescript",
+      "license_summary": "Apache-2.0",
+      "files": [
+        {
+          "source": "LICENSE.txt",
+          "file": "npm/typescript@5.7.3/LICENSE.txt",
+          "sha256": "a7d00bfd54525bc694b6e32f64c7ebcf5e6b7ae3657be5cc12767bce74654a47",
+          "bytes": 9197
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "undici-types",
+      "version": "6.21.0",
+      "scope": "development",
+      "lock_path": "node_modules/undici-types",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/undici-types@6.21.0/LICENSE",
+          "sha256": "a6db8096b2707bc0102d256917d4d33f298ba36d8c3f25de067a2b5bb379db27",
+          "bytes": 1090
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "update-browserslist-db",
+      "version": "1.3.4",
+      "scope": "development",
+      "lock_path": "node_modules/update-browserslist-db",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/update-browserslist-db@1.3.4/LICENSE",
+          "sha256": "9877e90da14aa8c931a1f9d07cc2a20ce119106e5dab1ebb41af865266d0cd2a",
+          "bytes": 1118
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "vite",
+      "version": "6.4.5",
+      "scope": "development",
+      "lock_path": "node_modules/vite",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE.md",
+          "file": "npm/vite@6.4.5/LICENSE.md",
+          "sha256": "008938a3441801ca3960f8e3ccb4c0738e7996442a53063141d57d3769a7344d",
+          "bytes": 115624
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "which-module",
+      "version": "2.0.1",
+      "scope": "runtime",
+      "lock_path": "node_modules/which-module",
+      "license_summary": "ISC",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/which-module@2.0.1/LICENSE",
+          "sha256": "852bf81203aa93aa89afc9f881ebb035322dc7334aaceff435c557634c94a815",
+          "bytes": 731
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "wrap-ansi",
+      "version": "6.2.0",
+      "scope": "runtime",
+      "lock_path": "node_modules/wrap-ansi",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "license",
+          "file": "npm/wrap-ansi@6.2.0/license",
+          "sha256": "48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0",
+          "bytes": 1109
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "y18n",
+      "version": "4.0.3",
+      "scope": "runtime",
+      "lock_path": "node_modules/y18n",
+      "license_summary": "ISC",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/y18n@4.0.3/LICENSE",
+          "sha256": "2034cce3b6fafcddd642c4175e01d3ddfc332a53b9f20fdc46b1466dc89ac469",
+          "bytes": 731
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "yallist",
+      "version": "3.1.1",
+      "scope": "development",
+      "lock_path": "node_modules/yallist",
+      "license_summary": "ISC",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/yallist@3.1.1/LICENSE",
+          "sha256": "4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b",
+          "bytes": 765
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "yargs",
+      "version": "15.4.1",
+      "scope": "runtime",
+      "lock_path": "node_modules/yargs",
+      "license_summary": "MIT",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "npm/yargs@15.4.1/LICENSE",
+          "sha256": "2f1a503bfab84b3ba7393627308b3274501e459e3b5185bbb56bbf16cb1602d4",
+          "bytes": 1146
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "yargs-parser",
+      "version": "18.1.3",
+      "scope": "runtime",
+      "lock_path": "node_modules/yargs-parser",
+      "license_summary": "ISC",
+      "files": [
+        {
+          "source": "LICENSE.txt",
+          "file": "npm/yargs-parser@18.1.3/LICENSE.txt",
+          "sha256": "365496ca1f56da40b23c9815fc40fa9005847b2f8f8fd1c1a4929ef25ec8cd1d",
+          "bytes": 731
+        }
+      ],
+      "status": "collected"
+    },
+    {
+      "ecosystem": "go-toolchain",
+      "name": "Go runtime and standard library",
+      "version": "go1.27.3",
+      "scope": "runtime",
+      "license_summary": "BSD-3-Clause; PATENTS",
+      "files": [
+        {
+          "source": "LICENSE",
+          "file": "go-toolchain/go1.27.3/LICENSE",
+          "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+          "bytes": 1453
+        },
+        {
+          "source": "PATENTS",
+          "file": "go-toolchain/go1.27.3/PATENTS",
+          "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc",
+          "bytes": 1303
+        }
+      ],
+      "status": "collected"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+# Use a domain you control. This is a standalone example, not an installer.
+panel.example.com {
+    encode zstd gzip
+    reverse_proxy 127.0.0.1:8080
+}
+# Set XRAY_PANEL_SECURE_COOKIES=1 in /etc/xray-relay-panel/panel.env
+# before exposing the panel through HTTPS.
