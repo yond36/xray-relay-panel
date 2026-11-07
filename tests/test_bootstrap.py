@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tarfile
 import tempfile
 import unittest
@@ -209,6 +210,56 @@ class BootstrapTests(unittest.TestCase):
     def test_oversized_metadata(self):
         entry = self.member("xray-relay-panel-linux-amd64/docs/note", pax={"comment": "x" * (65 * 1024)})
         self.assert_rejected(self.fixture(extra=[entry]), "metadata")
+
+    def test_first_global_metadata_size_boundary(self):
+        for size in (64 * 1024, 64 * 1024 + 1):
+            with self.subTest(size=size):
+                # Include the decimal length prefix, key, and newline in the
+                # boundary, rather than only counting the comment value.
+                value = "x" * (size - len(str(size)) - len(" comment=\n"))
+                prefix = tarfile.TarInfo.create_pax_global_header({"comment": value})
+                header = tarfile.TarInfo.frombuf(prefix[:512], "utf-8", "strict")
+                self.assertEqual(header.size, size)
+                package = self.fixture()
+                package.write_bytes(gzip.compress(prefix + gzip.decompress(package.read_bytes())))
+                self.checksum(package)
+                if size == 64 * 1024:
+                    result = self.verify(package)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                else:
+                    self.assert_rejected(package, "metadata")
+
+    def test_header_limits_when_tarfile_bypasses_public_frombuf(self):
+        # Reproduce 3.12.16's private parser dispatch on older Python too. This
+        # exercises the actual embedded verifier without altering host stdlib.
+        verifier = SCRIPT.read_text(encoding="utf-8").split("<<'PY'\n", 1)[1].split("\nPY\n", 1)[0]
+        shim = """
+import sys
+import tarfile
+raw_parser = getattr(tarfile.TarInfo, '_frombuf', tarfile.TarInfo.frombuf).__func__
+@classmethod
+def fromtarfile(cls, archive):
+    buf = archive.fileobj.read(tarfile.BLOCKSIZE)
+    item = raw_parser(cls, buf, archive.encoding, archive.errors)
+    item.offset = archive.fileobj.tell() - tarfile.BLOCKSIZE
+    return item._proc_member(archive)
+tarfile.TarInfo.fromtarfile = fromtarfile
+exec(compile(sys.stdin.read(), '<bootstrap-verifier>', 'exec'))
+"""
+        entries = (
+            (self.member("xray-relay-panel-linux-amd64/docs/note", pax={"comment": "x" * (65 * 1024)}), "metadata"),
+            (self.member("xray-relay-panel-linux-amd64/large", content=b"", size=MAX_FILE + 1), "file size limit"),
+        )
+        for entry, expected in entries:
+            with self.subTest(expected=expected):
+                package = self.fixture(extra=[entry])
+                result = subprocess.run(
+                    [sys.executable, "-I", "-B", "-c", shim, str(package), TAG, "amd64", ""],
+                    input=verifier, cwd=SCRIPT.parent, capture_output=True, text=True, timeout=15, check=False,
+                )
+                self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertIn(expected, result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
 
     def test_duplicate_and_file_directory_conflicts(self):
         root = "xray-relay-panel-linux-amd64"

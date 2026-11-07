@@ -45,7 +45,7 @@ def source_files(root):
             if path.is_file() and allowed(root, path):
                 result.append(regular(path))
     result.extend(regular(path) for path in (root / 'web/src').rglob('*') if path.is_file() and allowed(root, path))
-    result.extend(regular(path) for path in (root / 'web').iterdir() if path.is_file() and path.suffix in ('.json', '.ts', '.html'))
+    result.extend(regular(path) for path in (root / 'web').iterdir() if path.is_file() and (path.suffix in ('.json', '.ts', '.html') or path.name == '.gitignore'))
     result.extend(regular(root / 'tools' / name) for name in PUBLIC_TOOLS)
     return sorted(set(result), key=lambda path: path.relative_to(root).as_posix())
 

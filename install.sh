@@ -134,21 +134,22 @@ class LimitedReader:
 class CheckedInfo(tarfile.TarInfo):
     headers = 0
 
-    @classmethod
-    def frombuf(cls, buf, encoding, errors):
-        item = super().frombuf(buf, encoding, errors)
-        cls.headers += 1
-        if cls.headers > MAX_HEADERS:
+    def _proc_member(self, archive):
+        # Python 3.12.16 parses headers through _frombuf(), bypassing public
+        # frombuf() overrides. Both parser paths dispatch here before reading
+        # PAX/GNU metadata, including the first header and nested headers.
+        type(self).headers += 1
+        if type(self).headers > MAX_HEADERS:
             reject('too many tar headers')
         metadata = (tarfile.XHDTYPE, tarfile.XGLTYPE, tarfile.GNUTYPE_LONGNAME)
-        if item.type in metadata:
-            if item.size < 0 or item.size > MAX_METADATA:
+        if self.type in metadata:
+            if self.size < 0 or self.size > MAX_METADATA:
                 reject('tar metadata exceeds the size limit')
-        elif item.type not in (tarfile.REGTYPE, tarfile.AREGTYPE, tarfile.DIRTYPE):
+        elif self.type not in (tarfile.REGTYPE, tarfile.AREGTYPE, tarfile.DIRTYPE):
             reject('links and special tar entries are forbidden')
-        elif item.size < 0 or item.size > MAX_FILE:
+        elif self.size < 0 or self.size > MAX_FILE:
             reject('tar member exceeds the file size limit')
-        return item
+        return super()._proc_member(archive)
 
 
 def verify():
