@@ -43,6 +43,8 @@ jobs:
 
           中文 Xray 中转面板，支持入口节点、出口节点、转发管理、多用户、官方核心版本手动选择和 VLESS-REALITY 默认入口。出口节点列表可通过选定入口检测实际代理通道，显示状态、出口 IP、请求耗时与失败原因，页面字体同步增大。
 
+          修复新建默认转发时“JSON 请求格式或字段无效”：表单请求省略服务端维护的时间字段，新建和编辑共用经过契约回归验证的构造逻辑。升级后请刷新浏览器页面。
+
           一键安装：
           ```sh
           curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/install.sh | sudo bash -s -- install

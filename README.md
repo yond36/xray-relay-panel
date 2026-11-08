@@ -1,4 +1,6 @@
-# Xray 中转面板 v0.2.4
+# Xray 中转面板 v0.2.5
+
+v0.2.5 修复默认配置新建转发时的“JSON 请求格式或字段无效”：提交请求不再携带空的 `created_at`、`updated_at`，由服务端生成或保留时间。新建、编辑共用请求构造逻辑，并通过前后端共享的默认 JSON 样本验证。升级后请刷新页面加载新版表单。验证记录见 [docs/verification-v0.2.5.md](docs/verification-v0.2.5.md)。
 
 v0.2.4 统一界面名称为“入口节点 / 出口节点 / 转发管理”，增大页面字体，并在出口节点列表增加可用性检测。检测从选定入口节点经出口代理发起真实 HTTPS 请求，显示状态、出口 IP、请求耗时和失败原因；任务与结果关联可在刷新后恢复，并修正仅 IPv6 成功时的误判。验证结果及浏览器验收限制见 [docs/verification-v0.2.4.md](docs/verification-v0.2.4.md)。
 
@@ -31,10 +33,10 @@ v0.2.1 修复 SOCKS 分享链接中 Base64 用户名与密码的解析，支持�
 curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/install.sh | sudo bash -s -- install
 ```
 
-固定安装本项目的 `v0.2.4`：
+固定安装本项目的 `v0.2.5`：
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/install.sh | sudo bash -s -- install --version v0.2.4
+curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/install.sh | sudo bash -s -- install --version v0.2.5
 ```
 
 安装入口支持 Linux amd64 / arm64，将最新正式版解析为固定 tag，并从同一 tag 下载发行包及 `.sha256`。它先校验 SHA-256、归档路径和文件类型，再安装面板；运行发行程序无需 Go 或 Node.js。安装、升级及卸载需要 Python 3，安装入口会检查并补齐 curl、CA 证书、Python 3、sudo 等必需工具。SHA-256 用于校验下载内容与发布方校验文件一致，不等于独立的签名认证。
@@ -44,7 +46,7 @@ curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/instal
 ```sh
 sudo xray-relay-panel status
 sudo xray-relay-panel upgrade
-sudo xray-relay-panel upgrade --version v0.2.4
+sudo xray-relay-panel upgrade --version v0.2.5
 sudo xray-relay-panel uninstall
 ```
 

@@ -1,12 +1,12 @@
 {
   "name": "xray-relay-panel-web",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
-    "test": "node --experimental-strip-types --test src/__tests__/probes.test.mjs",
+    "test": "node --experimental-strip-types --test src/__tests__/probes.test.mjs src/__tests__/relay-form.test.mjs",
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {

@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "project_version": "0.2.4",
+  "project_version": "0.2.5",
   "method": "Byte-for-byte copies from exact go.mod versions in the local Go module cache and exact package-lock versions in web/node_modules; no downloads or package execution.",
   "scope_note": "All go.mod requirements and the full non-dev npm lock graph are included conservatively; this is not a symbol-level or tree-shaken bundle inventory. Development packages are supplementary. Nested node_modules and testdata are not scanned as part of their parent packages. Embedded per-source notices may need separate review.",
   "inputs": {
     "go.mod": "7e11f523668b7bdef5aa17c35220bb3e1eeade54d82c21d93f5b29ed35e8e56a",
-    "web/package-lock.json": "40a5f975ef44580e2e5232f90a8e51457bcf5f0621846f3a65241ee9000edc97"
+    "web/package-lock.json": "81116fed4286fcf134f89225f3eef24002a06b7149dbfba501510fa053bd8daf"
   },
   "summary": {
     "go_modules": 15,
