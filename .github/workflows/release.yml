@@ -41,9 +41,15 @@ jobs:
           tag = os.environ['RELEASE_TAG']
           Path('release-notes.md').write_text(f'''Xray Relay Panel {tag}
 
-          中文 Xray 中转面板，支持入口节点、出口节点、转发管理、多用户、官方核心版本手动选择和 VLESS-REALITY 默认入口。出口节点列表可通过选定入口检测实际代理通道，显示状态、出口 IP、请求耗时与失败原因，页面字体同步增大。
+          中文 Xray 中转面板，支持入口节点、出口节点、转发管理、多用户、官方核心版本手动选择和 VLESS-REALITY 默认入口。
 
-          修复新建默认转发时“JSON 请求格式或字段无效”：表单请求省略服务端维护的时间字段，新建和编辑共用经过契约回归验证的构造逻辑。升级后请刷新浏览器页面。
+          新建转发从 `10000..65535` 随机选择监听端口，避开同一入口节点已保存转发的端口；点击“随机端口”可重新抽取，手动填写的端口和编辑已有转发的端口保留。随机选择只参考已保存转发，系统监听冲突仍在应用节点配置时检查。
+
+          新建 REALITY 的默认 target / SNI 改为 `www.cloudflare.com:443` / `www.cloudflare.com`，与后端默认值一致。隔离测试中，Xray-core `v26.6.27` 配合微软目标失败、配合 Cloudflare 目标成功；`v26.10.31` 配合两者均成功。
+
+          本次线上验收保持服务端核心为 `v26.6.27`，仅将既有 REALITY 转发的 target / SNI 从微软目标切换为 Cloudflare。外部官方 Xray 客户端 `v26.10.31`、`v1.8.24` 的 VLESS 请求及 Shadowsocks 对照请求均成功，观察到相同出口 IP；既有端口、UUID、密钥、short ID、flow 与出口选择保留，原有 x-ui / Xray 服务的 unit、进程与配置未变化。本次结果限于记录中的环境与请求，验证记录见 [docs/verification-{tag}.md](https://github.com/yond36/xray-relay-panel/blob/{tag}/docs/verification-{tag}.md)。
+
+          升级后请刷新浏览器页面，加载新版表单。默认值调整作用于新建转发；已有 REALITY 转发如需切换目标，请修改 target / SNI 并应用节点配置，再重新复制分享链接或刷新客户端订阅，以更新客户端 SNI。保存或出口探测不代表目标站已通过 REALITY 兼容性验证。
 
           一键安装：
           ```sh

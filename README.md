@@ -1,4 +1,10 @@
-# Xray 中转面板 v0.2.5
+# Xray 中转面板 v0.2.6
+
+v0.2.6 新建转发时，从 `10000..65535` 随机选择监听端口，避开同一入口节点已保存转发的端口；可点击“随机端口”重新抽取，手动填写的端口和编辑已有转发的端口保留。新建 REALITY 的默认 target / SNI 改为 `www.cloudflare.com:443` / `www.cloudflare.com`，与后端默认值一致。
+
+隔离测试中，Xray-core `v26.6.27` 配合微软目标失败、配合 Cloudflare 目标成功；`v26.10.31` 配合两者均成功。本次线上验收保持服务端核心为 `v26.6.27`，仅将既有 REALITY 转发的 target / SNI 从微软目标切换为 Cloudflare；外部官方 Xray 客户端 `v26.10.31`、`v1.8.24` 的 VLESS 请求及 Shadowsocks 对照请求均成功，观察到相同出口 IP。既有端口、UUID、密钥、short ID、flow 与出口选择保留，原有 x-ui / Xray 服务的 unit、进程与配置未变化。本次结果限于记录中的环境与请求，验证记录见 [docs/verification-v0.2.6.md](docs/verification-v0.2.6.md)。
+
+升级后请刷新浏览器页面，加载新版表单。默认值调整作用于新建转发；已有 REALITY 转发如需切换目标，请修改 target / SNI 并应用节点配置，再重新复制分享链接或刷新客户端订阅，以更新客户端 SNI。
 
 v0.2.5 修复默认配置新建转发时的“JSON 请求格式或字段无效”：提交请求不再携带空的 `created_at`、`updated_at`，由服务端生成或保留时间。新建、编辑共用请求构造逻辑，并通过前后端共享的默认 JSON 样本验证。升级后请刷新页面加载新版表单。验证记录见 [docs/verification-v0.2.5.md](docs/verification-v0.2.5.md)。
 
@@ -33,10 +39,10 @@ v0.2.1 修复 SOCKS 分享链接中 Base64 用户名与密码的解析，支持�
 curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/install.sh | sudo bash -s -- install
 ```
 
-固定安装本项目的 `v0.2.5`：
+固定安装本项目的 `v0.2.6`：
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/install.sh | sudo bash -s -- install --version v0.2.5
+curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/install.sh | sudo bash -s -- install --version v0.2.6
 ```
 
 安装入口支持 Linux amd64 / arm64，将最新正式版解析为固定 tag，并从同一 tag 下载发行包及 `.sha256`。它先校验 SHA-256、归档路径和文件类型，再安装面板；运行发行程序无需 Go 或 Node.js。安装、升级及卸载需要 Python 3，安装入口会检查并补齐 curl、CA 证书、Python 3、sudo 等必需工具。SHA-256 用于校验下载内容与发布方校验文件一致，不等于独立的签名认证。
@@ -46,7 +52,7 @@ curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/instal
 ```sh
 sudo xray-relay-panel status
 sudo xray-relay-panel upgrade
-sudo xray-relay-panel upgrade --version v0.2.5
+sudo xray-relay-panel upgrade --version v0.2.6
 sudo xray-relay-panel uninstall
 ```
 
@@ -143,7 +149,9 @@ Linux 同架构发布包将 helper 与面板放在一起即可。Windows 管理 
 
 协议、传输和安全层分别处理，导入不会静默删除关键参数。旧认证、旧传输、插件依赖或核心不支持的组合会返回具体错误。高级 outbound JSON 用于补充上游参数，仍受面板的协议/传输白名单约束，应用前需通过所选核心的配置校验；未支持的组合会明确拒绝。完整 Xray JSON 仅提取选定出站，不接管原配置中的日志、入站、路由或管理接口。
 
-在“转发管理”选择入口节点、出口节点与监听端口。默认 REALITY 配置自动生成 UUID、X25519 密钥和 short ID；目标站与 SNI 可修改。目标站需要从中转服务器可达，并满足 REALITY 对 TLS / HTTP/2 等条件的要求。TLS 入口需要提供自己的证书和私钥。
+在“转发管理”选择入口节点、出口节点与监听端口。新建时自动从 `10000..65535` 随机选择端口，避开同一入口节点已保存转发的端口；点击“随机端口”可重新抽取，也可手动填写 `1..65535`。手动填写的端口和编辑已有转发的端口保留。随机选择只参考已保存转发，系统监听冲突仍在应用节点配置时检查。
+
+默认 REALITY 配置自动生成 UUID、X25519 密钥和 short ID；新建时 target / SNI 默认为 `www.cloudflare.com:443` / `www.cloudflare.com`，与后端一致，可按需修改。目标站需要从中转服务器可达，并满足 REALITY 对 TLS / HTTP/2 等条件的要求；保存或出口探测不代表目标站已通过 REALITY 兼容性验证。TLS 入口需要提供自己的证书和私钥。
 
 保存规则后，点击“应用节点配置”。保存与应用是不同状态，任务成功后才记录部署修订。一个节点的所有启用规则统一生成一份配置；每个入口明确路由到指定上游，默认出口为拒绝。
 

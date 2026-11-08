@@ -1,13 +1,93 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import test from 'node:test'
-import { newRelayDraft, relayRequest } from '../relay-form.ts'
+import { changeRelayNode, newRelayDraft, randomRelayPort, relayRequest } from '../relay-form.ts'
 
 const owner = 'fixture-admin'
 const node = { kind: 'ssh', public_host: 'relay.example.test', host: 'entry.example.test' }
-const newDraft = () => ({ ...newRelayDraft(owner, 'entry-default', 'exit-default'), name: ' Default relay ' })
+const fixedPort = 24443
+const fixedRandom = () => fixedPort - 10000
+const newDraft = () => ({ ...newRelayDraft(owner, 'entry-default', 'exit-default', [], fixedRandom), name: ' Default relay ' })
 const serialized = draft => JSON.parse(JSON.stringify(relayRequest(draft, node, owner)))
 
+test('automatic ports include both five-digit boundaries', () => {
+  assert.equal(newRelayDraft(owner, 'entry-default', 'exit-default', [], () => 0).port, 10000)
+  assert.equal(newRelayDraft(owner, 'entry-default', 'exit-default', [], () => 55535).port, 65535)
+})
+
+test('the browser default draws from getRandomValues once', t => {
+  const random = t.mock.method(globalThis.crypto, 'getRandomValues', values => {
+    assert.ok(values instanceof Uint32Array)
+    values[0] = fixedRandom()
+    return values
+  })
+  const draft = newRelayDraft(owner, 'entry-default', 'exit-default')
+  assert.equal(draft.port, fixedPort)
+  assert.equal(random.mock.callCount(), 1)
+})
+
+test('random ports skip every saved entry port and the current value, including disabled relays', () => {
+  const saved = [
+    { node_id: 'entry-default', port: 10000, enabled: true },
+    { node_id: 'entry-default', port: 10001, enabled: false },
+    { node_id: 'entry-default', port: 10001, enabled: false },
+    { node_id: 'another-entry', port: 10003, enabled: true },
+  ]
+  assert.equal(newRelayDraft(owner, 'entry-default', 'exit-default', saved, () => 0).port, 10002)
+  assert.equal(randomRelayPort('entry-default', saved, 10002, () => 0), 10003)
+  assert.equal(randomRelayPort('entry-default', [{ node_id: 'entry-default', port: 65535 }], undefined, () => 55534), 65534)
+  assert.equal(randomRelayPort('entry-default', [], 65535, () => 0), 10000)
+})
+
+test('random sampling rejects the incomplete final interval', () => {
+  const words = [0xffffffff, fixedRandom()]
+  assert.equal(randomRelayPort('entry-default', [], undefined, () => {
+    assert.ok(words.length, 'random sampling must stop after the accepted word')
+    return words.shift()
+  }), fixedPort)
+  assert.equal(words.length, 0)
+})
+
+test('nearly full and exhausted entries terminate without retrying occupied ports', () => {
+  const saved = Array.from({ length: 55535 }, (_, index) => ({ node_id: 'entry-default', port: 10000 + index }))
+  assert.equal(randomRelayPort('entry-default', saved, undefined, () => 0), 65535)
+  assert.throws(() => randomRelayPort('entry-default', saved, 65535, () => assert.fail('no random draw when no ports remain')), /没有可用的五位数端口/)
+})
+
+test('switching an automatic new draft selects for the new entry without reusing its current port', () => {
+  const draft = newDraft()
+  const saved = [
+    { node_id: 'next-entry', port: 10000, enabled: false },
+    { node_id: 'entry-default', port: 10001, enabled: true },
+  ]
+  let draws = 0
+  const switched = changeRelayNode(draft, 'next-entry', true, saved, () => { draws++; return 0 })
+  assert.equal(switched.node_id, 'next-entry')
+  assert.equal(switched.port, 10001)
+  assert.equal(draws, 1)
+  assert.equal(draft.node_id, 'entry-default')
+  assert.equal(draft.port, fixedPort)
+  assert.equal(changeRelayNode(switched, 'next-entry', true, saved, () => assert.fail('same entry must not redraw')), switched)
+  const again = changeRelayNode(switched, 'entry-default', true, saved, () => 0)
+  assert.equal(again.port, 10000)
+  assert.equal(changeRelayNode({ ...draft, port: 10000 }, 'next-entry', true, [], () => 0).port, 10001)
+})
+
+test('switching entries preserves manual ports and every existing relay port', () => {
+  for (const port of [1, 443, fixedPort, 65535]) {
+    const saved = [{ node_id: 'next-entry', port }]
+    const noRandom = () => assert.fail('manual and saved ports must not be randomized')
+    const manual = changeRelayNode({ ...newDraft(), port }, 'next-entry', false, saved, noRandom)
+    assert.equal(manual.node_id, 'next-entry')
+    assert.equal(manual.port, port)
+    assert.equal(serialized(manual).port, port)
+    for (const automaticPort of [false, true]) {
+      const edited = changeRelayNode({ ...newDraft(), id: 'existing-relay', port }, 'next-entry', automaticPort, saved, noRandom)
+      assert.equal(edited.port, port)
+      assert.equal(edited.id, 'existing-relay')
+    }
+  }
+})
 
 test('the actual default form serializes to the shared API contract', async () => {
   const contract = JSON.parse(await readFile(new URL('../../../tests/fixtures/default-relay-request.json', import.meta.url), 'utf8'))
@@ -24,7 +104,7 @@ test('create and edit requests omit server timestamps, including malformed and s
     const body = serialized({ ...newDraft(), created_at, updated_at })
     assert.equal(Object.hasOwn(body, 'created_at'), false)
     assert.equal(Object.hasOwn(body, 'updated_at'), false)
-    assert.equal(body.port, 443)
+    assert.equal(body.port, fixedPort)
     assert.equal(body.enabled, true)
   }
 })

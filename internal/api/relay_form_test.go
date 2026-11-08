@@ -80,8 +80,8 @@ func TestRelayFormJSONContract(t *testing.T) {
 			t.Fatal("relay lost its owner or resource references")
 		}
 		// The API normalizes the form's TCP transport to Xray's RAW name.
-		if !created.Enabled || created.Port != 443 || created.Protocol != "vless" || created.Security != "reality" || created.Flow != "xtls-rprx-vision" || created.Network != "raw" || created.Listen != "0.0.0.0" {
-			t.Fatal("default form's enabled 443/VLESS/REALITY/Vision configuration changed")
+		if !created.Enabled || created.Port != 24443 || created.Protocol != "vless" || created.Security != "reality" || created.Flow != "xtls-rprx-vision" || created.Network != "raw" || created.Listen != "0.0.0.0" {
+			t.Fatal("default form's enabled 24443/VLESS/REALITY/Vision configuration changed")
 		}
 		assertConfigOnly(t, created)
 	}) {
@@ -97,6 +97,22 @@ func TestRelayFormJSONContract(t *testing.T) {
 		want.Enabled, want.UpdatedAt = false, updated.UpdatedAt
 		if updated != want || updated.UpdatedAt.Before(created.UpdatedAt) {
 			t.Fatal("update must disable the relay while preserving CreatedAt, credentials and other configuration")
+		}
+		assertConfigOnly(t, updated)
+	}) {
+		return
+	}
+
+	if !t.Run("server_target_defaults_match_form", func(t *testing.T) {
+		defaults := make(map[string]any, len(input))
+		for key, value := range input {
+			defaults[key] = value
+		}
+		delete(defaults, "server_name")
+		delete(defaults, "target")
+		updated = decodeResponse[model.Relay](t, request(t, s, http.MethodPut, "/api/relays/"+created.ID, defaults, cookie), http.StatusOK)
+		if updated.ServerName != input["server_name"] || updated.Target != input["target"] {
+			t.Fatal("server REALITY defaults differ from the form contract")
 		}
 		assertConfigOnly(t, updated)
 	}) {
