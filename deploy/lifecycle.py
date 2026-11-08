@@ -679,7 +679,7 @@ class Lifecycle:
                     mode = 0o644 if name.endswith((".py", ".service")) else 0o755
                     fs.write(p.root / name, source.read_bytes(), mode)
                 if not fs.exists(p.config / "panel.env"):
-                    fs.write(p.config / "panel.env", b"", 0o600)
+                    fs.write(p.config / "panel.env", b"XRAY_PANEL_BIND=0.0.0.0:8080\n", 0o600)
                 # Validate the exact rule before granting passwordless helper access.
                 fs.mkdir(p.sudoers.parent)
                 fd, temporary = tempfile.mkstemp(prefix=".xray-panel-", dir=str(p.sudoers.parent))
@@ -715,7 +715,8 @@ class Lifecycle:
                                      (error, backup or p.backups)) from error
             self.output("Panel %s installed; health: %s" % (actual_version, url))
             self.output("Manage with: xray-relay-panel status | upgrade | uninstall")
-            self.output("Initialize the administrator through an SSH tunnel if this is a new panel.")
+            self.output("Fresh installations listen on 0.0.0.0:8080; open http://SERVER_IP:8080 to initialize the administrator.")
+            self.output("Existing panel.env settings, including the bind address, are preserved.")
 
     def _node_owned(self):
         """Recognize only the layout emitted by internal/engine/node.go."""

@@ -185,6 +185,14 @@ def main():
             ready()
             protected()
             stages.append('offline bootstrap install and health')
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as route:
+                route.connect(('192.0.2.1', 9))
+                address = route.getsockname()[0]
+            assert address != '0.0.0.0' and not address.startswith('127.'), 'Fixture needs a non-loopback IPv4 address'
+            direct = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+            with direct.open('http://' + address + ':8080/healthz', timeout=5) as response:
+                assert json.load(response)['status'] == 'ok'
+            stages.append('fresh install accepts HTTP through a non-loopback IPv4 address')
             api('POST', '/api/auth/setup', {'username': 'installer_ci', 'password': secrets.token_urlsafe(24)})
             expected_user = api('GET', '/api/state')['current_user']
             settings = api('GET', '/api/settings')

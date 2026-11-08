@@ -48,6 +48,8 @@ jobs:
           curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/install.sh | sudo bash -s -- install
           ```
 
+          新安装默认监听 `0.0.0.0:8080`，可通过 `http://服务器公网IP:8080` 初始化管理员；服务器安全组或防火墙需允许 TCP 8080。升级和重装保留已有 `panel.env` 配置。
+
           默认卸载保留数据及已运行的中转：
           ```sh
           sudo xray-relay-panel uninstall

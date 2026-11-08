@@ -1,4 +1,6 @@
-# Xray 中转面板 v0.2.2
+# Xray 中转面板 v0.2.3
+
+v0.2.3 将新安装的默认监听改为 `0.0.0.0:8080`，可通过服务器公网 IP 访问；升级和重装保留已有 `panel.env` 的监听配置。
 
 v0.2.2 对齐 Xray 的上游用户 ID 规则：VLESS/VMess 支持 1–30 字节自定义字符串以及常见 UUID 格式，保留原始 ID，由核心进行映射。验证记录见 [docs/verification-v0.2.2.md](docs/verification-v0.2.2.md)。
 
@@ -27,10 +29,10 @@ v0.2.1 修复 SOCKS 分享链接中 Base64 用户名与密码的解析，支持�
 curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/install.sh | sudo bash -s -- install
 ```
 
-固定安装本项目的 `v0.2.2`：
+固定安装本项目的 `v0.2.3`：
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/install.sh | sudo bash -s -- install --version v0.2.2
+curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/install.sh | sudo bash -s -- install --version v0.2.3
 ```
 
 安装入口支持 Linux amd64 / arm64，将最新正式版解析为固定 tag，并从同一 tag 下载发行包及 `.sha256`。它先校验 SHA-256、归档路径和文件类型，再安装面板；运行发行程序无需 Go 或 Node.js。安装、升级及卸载需要 Python 3，安装入口会检查并补齐 curl、CA 证书、Python 3、sudo 等必需工具。SHA-256 用于校验下载内容与发布方校验文件一致，不等于独立的签名认证。
@@ -40,7 +42,7 @@ curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/instal
 ```sh
 sudo xray-relay-panel status
 sudo xray-relay-panel upgrade
-sudo xray-relay-panel upgrade --version v0.2.2
+sudo xray-relay-panel upgrade --version v0.2.3
 sudo xray-relay-panel uninstall
 ```
 
@@ -78,13 +80,15 @@ sudo bash deploy/install.sh dist/linux-amd64
 
 安装器创建普通系统账户 `xray-panel`，Web 进程以此账户运行；安装固定路径、root 所有的节点管理程序，并通过限定 sudo 命令完成本机节点操作。它不创建或修改已有的 Xray / x-ui 服务。首次应用本机配置时，才创建面板自己的中转服务。
 
-默认仅监听 `127.0.0.1:8080`。在自己的电脑建立 SSH 隧道，再打开 <http://127.0.0.1:8080> 初始化管理员：
+新安装默认监听 `0.0.0.0:8080`，在浏览器打开 `http://服务器公网IP:8080` 初始化管理员。服务器安全组或防火墙需允许 TCP 8080。
+
+升级和重装保留 `/etc/xray-relay-panel/panel.env` 中已有的配置。已有安装若要切换公网监听，将 `XRAY_PANEL_BIND=0.0.0.0:8080` 写入该文件，再执行 `sudo systemctl restart xray-relay-panel`。只需本机访问时，可将该值设为 `127.0.0.1:8080`，在自己的电脑建立 SSH 隧道并访问 <http://127.0.0.1:8080>：
 
 ```sh
 ssh -p YOUR_SSH_PORT -L 8080:127.0.0.1:8080 YOUR_USER@YOUR_PANEL_SERVER
 ```
 
-首次访问设置管理员账户；没有预置通用账户或默认密码。公网访问可使用 `deploy/Caddyfile.example` 配置独立 HTTPS 反向代理，并在 `/etc/xray-relay-panel/panel.env` 中设置 `XRAY_PANEL_SECURE_COOKIES=1`。反向代理应保留请求 Host。
+首次访问设置管理员账户；没有预置通用账户或默认密码。HTTPS 访问可使用 `deploy/Caddyfile.example` 配置独立反向代理，并在 `/etc/xray-relay-panel/panel.env` 中设置 `XRAY_PANEL_SECURE_COOKIES=1`。反向代理应保留请求 Host。
 
 Windows 本地预览：
 

@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-const Version = "0.2.2"
+const Version = "0.2.3"
 const DefaultCoreVersion = "v26.10.31"
 
 const (
