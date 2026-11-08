@@ -41,7 +41,7 @@ jobs:
           tag = os.environ['RELEASE_TAG']
           Path('release-notes.md').write_text(f'''Xray Relay Panel {tag}
 
-          中文 Xray 中转面板，支持 SSH/本机节点、多用户、官方核心版本手动选择、VLESS-REALITY 默认入口和真实出口检测。
+          中文 Xray 中转面板，支持入口节点、出口节点、转发管理、多用户、官方核心版本手动选择和 VLESS-REALITY 默认入口。出口节点列表可通过选定入口检测实际代理通道，显示状态、出口 IP、请求耗时与失败原因，页面字体同步增大。
 
           一键安装：
           ```sh

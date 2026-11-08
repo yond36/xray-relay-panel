@@ -337,6 +337,73 @@ func TestSOCKSRemoteDNSAndVerifiedHTTPSEcho(t *testing.T) {
 	}
 	client.CloseIdleConnections()
 }
+
+type probeEchoTransport func(*http.Request) (*http.Response, error)
+
+func (f probeEchoTransport) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
+
+func TestProbeEgressAggregatesValidatedEchoResponses(t *testing.T) {
+	const (
+		ipv4Unavailable = "IPv4 proxy egress: IP echo returned HTTP 503"
+		ipv6Unavailable = "IPv6 proxy egress: IP echo returned HTTP 503"
+		ipv4Invalid     = "IPv4 proxy egress: IP echo returned an invalid address family"
+		ipv6Invalid     = "IPv6 proxy egress: IP echo returned an invalid address family"
+	)
+	for _, test := range []struct {
+		name                 string
+		code4, code6         int
+		body4, body6         string
+		status, ipv4, ipv6   string
+		ipv4Error, ipv6Error string
+		wantErr              bool
+	}{
+		{name: "dual-stack", code4: 200, code6: 200, body4: "203.0.113.17\n", body6: "2001:db8::17\n", status: "ok", ipv4: "203.0.113.17", ipv6: "2001:db8::17"},
+		{name: "IPv4-only", code4: 200, code6: 503, body4: "203.0.113.17", status: "ok", ipv4: "203.0.113.17", ipv6Error: ipv6Unavailable},
+		{name: "IPv6-only", code4: 503, code6: 200, body6: "2001:db8::17", status: "partial", ipv6: "2001:db8::17", ipv4Error: ipv4Unavailable},
+		{name: "both-unavailable", code4: 503, code6: 503, status: "failed", ipv4Error: ipv4Unavailable, ipv6Error: ipv6Unavailable, wantErr: true},
+		{name: "wrong-IPv4-family-with-IPv6", code4: 200, code6: 200, body4: "2001:db8::4", body6: "2001:db8::17", status: "partial", ipv6: "2001:db8::17", ipv4Error: ipv4Invalid},
+		{name: "IPv4-fails-and-wrong-IPv6-family", code4: 503, code6: 200, body6: "203.0.113.6", status: "failed", ipv4Error: ipv4Unavailable, ipv6Error: ipv6Invalid, wantErr: true},
+		{name: "both-invalid", code4: 200, code6: 200, body4: "not an IP", body6: "not an IP", status: "failed", ipv4Error: ipv4Invalid, ipv6Error: ipv6Invalid, wantErr: true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			var hits4, hits6 atomic.Int32
+			// Exercise the real echo status/body/family validation and concurrent
+			// aggregation without changing targets or contacting an external host.
+			client := &http.Client{Transport: probeEchoTransport(func(r *http.Request) (*http.Response, error) {
+				if r.Method != http.MethodGet {
+					return nil, errors.New("unexpected probe method")
+				}
+				var code int
+				var body string
+				switch r.URL.String() {
+				case ipv4Echo:
+					hits4.Add(1)
+					code, body = test.code4, test.body4
+				case ipv6Echo:
+					hits6.Add(1)
+					code, body = test.code6, test.body6
+				default:
+					return nil, errors.New("unexpected probe target")
+				}
+				return &http.Response{StatusCode: code, Body: io.NopCloser(strings.NewReader(body)), Header: make(http.Header), Request: r}, nil
+			})}
+			result, err := probeEgress(context.Background(), client, model.ProbeResult{UpstreamID: "test-upstream", Status: "failed"})
+			if (err != nil) != test.wantErr {
+				t.Fatalf("probe error = %v, want error %t (result %+v)", err, test.wantErr, result)
+			}
+			if result.Status != test.status || result.IPv4 != test.ipv4 || result.IPv6 != test.ipv6 {
+				t.Fatalf("incorrect aggregate egress: %+v", result)
+			}
+			if result.Error != test.ipv4Error || result.IPv6Error != test.ipv6Error {
+				t.Fatalf("per-family failure diagnostics were lost: %+v", result)
+			}
+			if hits4.Load() != 1 || hits6.Load() != 1 {
+				t.Fatalf("fixed echo endpoints were not both checked: IPv4 %d, IPv6 %d", hits4.Load(), hits6.Load())
+			}
+		})
+	}
+}
+
 func TestSOCKSFailureNeverFallsBackToDirect(t *testing.T) {
 	var requests atomic.Int32
 	echo := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { requests.Add(1); _, _ = io.WriteString(w, "203.0.113.1") }))

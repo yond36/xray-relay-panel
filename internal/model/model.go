@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-const Version = "0.2.3"
+const Version = "0.2.4"
 const DefaultCoreVersion = "v26.10.31"
 
 const (
@@ -98,6 +98,7 @@ type Job struct {
 	OwnerID    string     `json:"owner_id,omitempty"`
 	ID         string     `json:"id"`
 	NodeID     string     `json:"node_id"`
+	UpstreamID string     `json:"upstream_id,omitempty"`
 	Action     string     `json:"action"`
 	Status     string     `json:"status"`
 	Message    string     `json:"message"`
@@ -110,6 +111,7 @@ type Job struct {
 type ProbeResult struct {
 	OwnerID    string    `json:"owner_id,omitempty"`
 	ID         string    `json:"id"`
+	JobID      string    `json:"job_id,omitempty"`
 	NodeID     string    `json:"node_id"`
 	UpstreamID string    `json:"upstream_id"`
 	IPv4       string    `json:"ipv4,omitempty"`

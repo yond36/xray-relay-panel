@@ -16,9 +16,9 @@ import SettingsPage from './pages/Settings'
 
 const navigation: { id: Page; title: string; subtitle: string; icon: LucideIcon; adminOnly?: boolean }[] = [
   { id: 'dashboard', title: '概览', subtitle: 'Dashboard', icon: LayoutDashboard },
-  { id: 'nodes', title: '节点管理', subtitle: 'Nodes', icon: Server },
-  { id: 'upstreams', title: '上游资源', subtitle: 'Upstreams', icon: GitBranch },
-  { id: 'relays', title: '转发入口', subtitle: 'Relays', icon: Network },
+  { id: 'nodes', title: '入口节点', subtitle: 'Nodes', icon: Server },
+  { id: 'upstreams', title: '出口节点', subtitle: 'Upstreams', icon: GitBranch },
+  { id: 'relays', title: '转发管理', subtitle: 'Relays', icon: Network },
   { id: 'jobs', title: '任务记录', subtitle: 'Activity', icon: Activity },
   { id: 'users', title: '用户管理', subtitle: 'Users', icon: Users, adminOnly: true },
   { id: 'settings', title: '系统设置', subtitle: 'Settings', icon: Settings2 },
@@ -143,7 +143,7 @@ export default function App() {
       <div className="sidebar-brand"><Brand /><IconButton icon={X} label="关闭导航" className="mobile-only" onClick={() => setMobileOpen(false)} /></div>
       <div className="nav-caption">工作空间</div>
       <nav aria-label="主导航">{navigation.filter(item => !item.adminOnly || isAdmin).map(item => <button type="button" key={item.id} onClick={() => navigate(item.id)} className={`nav-item ${currentPage === item.id ? 'nav-active' : ''}`} aria-current={currentPage === item.id ? 'page' : undefined}><item.icon size={19} /><span>{item.id === 'settings' && !isAdmin ? '账户设置' : item.title}</span>{item.id === 'jobs' && runningCount > 0 ? <span className="nav-count">{runningCount}</span> : currentPage === item.id && <ChevronRight size={15} className="nav-chevron" />}</button>)}</nav>
-      <div className="sidebar-guide"><ShieldCheck size={23} /><strong>独立部署，统一管理</strong><p>节点配置保存后，手动应用生效。{isAdmin ? '当前展示全部用户的管理资源。' : '在此管理属于你的节点与转发资源。'}</p><button onClick={() => navigate('settings')}><CircleHelp size={14} />配置与订阅<ArrowRight size={13} /></button></div>
+      <div className="sidebar-guide"><ShieldCheck size={23} /><strong>独立部署，统一管理</strong><p>入口节点配置保存后，手动应用生效。{isAdmin ? '当前展示全部用户的管理资源。' : '在此管理属于你的入口节点、出口节点与转发。'}</p><button onClick={() => navigate('settings')}><CircleHelp size={14} />配置与订阅<ArrowRight size={13} /></button></div>
       <div className="sidebar-footer"><span className="status-dot" /><div>Xray Relay Panel<small>{bootstrap.version ? `v${bootstrap.version.replace(/^v/, '')}` : '版本未提供'}</small></div></div>
     </aside>
     <div className="workspace">
@@ -164,7 +164,7 @@ export default function App() {
       </header>
       <main id="main-content" className="main-content">
         {stateError && <div className="connection-error"><Alert tone="danger" title="数据更新失败">{stateError} {state ? '当前展示上次成功获取的数据。' : ''}<button className="inline-link" disabled={refreshing} onClick={() => void refresh().catch(() => undefined)}>重试</button></Alert></div>}
-        {state ? <AppContext.Provider key={state.current_user.id} value={{ state, refreshing, refresh, navigate, toast, probeJobs, registerProbe }}><CurrentPage /></AppContext.Provider> : <div className="page-loading" role="status"><Spinner size={26} /><h2>正在读取工作空间</h2><p>获取节点、上游与转发配置…</p></div>}
+        {state ? <AppContext.Provider key={state.current_user.id} value={{ state, refreshing, refresh, navigate, toast, probeJobs, registerProbe }}><CurrentPage /></AppContext.Provider> : <div className="page-loading" role="status"><Spinner size={26} /><h2>正在读取工作空间</h2><p>获取入口节点、出口节点与转发配置…</p></div>}
         <footer className="page-footer"><span>Xray Relay Panel · 转发管理工作空间</span><span>{updatedAt ? `数据更新于 ${updatedAt.toLocaleTimeString('zh-CN', { hour12: false })}` : '等待服务响应'}</span></footer>
       </main>
     </div>
@@ -189,12 +189,12 @@ function AuthScreen({ initialized, registrationOpen, version, onAuthenticated }:
   useEffect(() => { if (!registrationOpen) switchMode('login') }, [registrationOpen])
 
   return <div className="auth-screen">
-    <section className="auth-intro"><Brand /><div className="auth-message"><div className="eyebrow">YOUR NETWORK. UNDER CONTROL.</div><h1>让每一条连接，<br />清晰可控。</h1><p>从节点部署到上游编排，再到转发入口，<br />在一个工作空间里管理你的网络。</p><div className="auth-network" aria-hidden="true"><span><Server size={26} /></span><i /><span className="network-center"><Workflow size={32} /></span><i /><span><GitBranch size={26} /></span></div><div className="auth-features"><span><ShieldCheck size={17} />主机指纹验证</span><span><Network size={17} />独立节点配置</span><span><Activity size={17} />真实出口探测</span></div></div><span className="auth-version">XRAY RELAY PANEL {version && ` / ${version}`}</span></section>
+    <section className="auth-intro"><Brand /><div className="auth-message"><div className="eyebrow">YOUR NETWORK. UNDER CONTROL.</div><h1>让每一条连接，<br />清晰可控。</h1><p>从入口节点部署到出口节点编排，再到转发管理，<br />在一个工作空间里管理你的网络。</p><div className="auth-network" aria-hidden="true"><span><Server size={26} /></span><i /><span className="network-center"><Workflow size={32} /></span><i /><span><GitBranch size={26} /></span></div><div className="auth-features"><span><ShieldCheck size={17} />主机指纹验证</span><span><Network size={17} />独立入口节点配置</span><span><Activity size={17} />真实出口探测</span></div></div><span className="auth-version">XRAY RELAY PANEL {version && ` / ${version}`}</span></section>
     <section className="auth-form-side"><div className="auth-form-card">
       <div className="auth-symbol"><ShieldCheck size={28} /></div>
       <div className="eyebrow">{setup ? 'GET STARTED' : registering ? 'CREATE YOUR ACCOUNT' : 'WELCOME BACK'}</div>
       <h2>{setup ? '创建管理员账户' : registering ? '注册账户' : '登录控制台'}</h2>
-      <p>{setup ? '完成首次设置，开始管理节点与转发入口。' : registering ? '使用用户名和密码创建账户，开始管理你的转发网络。' : '使用你的账户继续管理转发网络。'}</p>
+      <p>{setup ? '完成首次设置，开始管理入口节点、出口节点与转发。' : registering ? '使用用户名和密码创建账户，开始管理你的转发网络。' : '使用你的账户继续管理转发网络。'}</p>
       {initialized && registrationOpen && <div className="auth-mode-tabs" aria-label="账户操作"><button type="button" aria-pressed={!registering} className={!registering ? 'auth-mode-active' : ''} disabled={busy} onClick={() => switchMode('login')}>登录</button><button type="button" aria-pressed={registering} className={registering ? 'auth-mode-active' : ''} disabled={busy} onClick={() => switchMode('register')}>注册账户</button></div>}
       <form onSubmit={async event => {
         event.preventDefault()

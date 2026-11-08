@@ -1,4 +1,6 @@
-# Xray 中转面板 v0.2.3
+# Xray 中转面板 v0.2.4
+
+v0.2.4 统一界面名称为“入口节点 / 出口节点 / 转发管理”，增大页面字体，并在出口节点列表增加可用性检测。检测从选定入口节点经出口代理发起真实 HTTPS 请求，显示状态、出口 IP、请求耗时和失败原因；任务与结果关联可在刷新后恢复，并修正仅 IPv6 成功时的误判。验证结果及浏览器验收限制见 [docs/verification-v0.2.4.md](docs/verification-v0.2.4.md)。
 
 v0.2.3 将新安装的默认监听改为 `0.0.0.0:8080`，可通过服务器公网 IP 访问；升级和重装保留已有 `panel.env` 的监听配置。
 
@@ -18,7 +20,7 @@ v0.2.1 修复 SOCKS 分享链接中 Base64 用户名与密码的解析，支持�
 
 - 面板生产环境：Linux、systemd，支持 amd64 / arm64。
 - 远程节点：Linux、systemd、SSH 与 SFTP；使用 root，或具备非交互 sudo 权限的专用账户。
-- 开发环境：Go 1.24+、Node.js 20.19+ 或 22.12+、npm、Python 3。Windows 可以开发及通过 SSH 管理 Linux 节点。
+- 开发环境：Go 1.24+、Node.js 22.12+、npm、Python 3。Windows 可以开发及通过 SSH 管理 Linux 节点。
 - 运行时下载的 Xray-core 默认版本：`v26.10.31`，支持手动选择其他官方发布 tag。面板发行包不捆绑 Xray-core；应用节点配置时下载对应架构的官方资产并核对 SHA-256，不自动切换 latest。
 
 ## 一键安装与本地管理
@@ -29,10 +31,10 @@ v0.2.1 修复 SOCKS 分享链接中 Base64 用户名与密码的解析，支持�
 curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/install.sh | sudo bash -s -- install
 ```
 
-固定安装本项目的 `v0.2.3`：
+固定安装本项目的 `v0.2.4`：
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/install.sh | sudo bash -s -- install --version v0.2.3
+curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/install.sh | sudo bash -s -- install --version v0.2.4
 ```
 
 安装入口支持 Linux amd64 / arm64，将最新正式版解析为固定 tag，并从同一 tag 下载发行包及 `.sha256`。它先校验 SHA-256、归档路径和文件类型，再安装面板；运行发行程序无需 Go 或 Node.js。安装、升级及卸载需要 Python 3，安装入口会检查并补齐 curl、CA 证书、Python 3、sudo 等必需工具。SHA-256 用于校验下载内容与发布方校验文件一致，不等于独立的签名认证。
@@ -42,7 +44,7 @@ curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/instal
 ```sh
 sudo xray-relay-panel status
 sudo xray-relay-panel upgrade
-sudo xray-relay-panel upgrade --version v0.2.3
+sudo xray-relay-panel upgrade --version v0.2.4
 sudo xray-relay-panel uninstall
 ```
 
@@ -65,6 +67,7 @@ sudo xray-relay-panel uninstall --purge --remove-local-node --yes
 ```sh
 cd web
 npm ci
+npm test
 cd ..
 go mod download
 python -I tools/build.py --os linux --arch amd64
@@ -108,7 +111,7 @@ python -I tools/build.py
 
 ## 手动选择 Xray-core 版本
 
-“节点管理”和管理员“设置”中的版本选择器从 GitHub 官方 [XTLS/Xray-core Releases](https://github.com/XTLS/Xray-core/releases) 获取最多最近 100 条发布记录，标识预发布版本，并提供刷新、缓存时间及失败提示。获取失败时保留已有缓存和当前选择，无缓存时仍可手动输入 tag。
+“入口节点”和管理员“设置”中的版本选择器从 GitHub 官方 [XTLS/Xray-core Releases](https://github.com/XTLS/Xray-core/releases) 获取最多最近 100 条发布记录，标识预发布版本，并提供刷新、缓存时间及失败提示。获取失败时保留已有缓存和当前选择，无缓存时仍可手动输入 tag。
 
 也可输入列表外的明确官方 tag，可省略 `v` 前缀并使用预发布后缀。保存时校验 tag 格式，实际下载还需对应的官方资产与校验文件可用；指定版本不可用时不会改用 latest。
 
@@ -116,7 +119,7 @@ python -I tools/build.py
 
 ## 添加 SSH 节点
 
-1. 打开“节点管理”，填写 SSH 地址、端口、用户名及密码或私钥。公网分享地址可单独填写，适用于 NAT 或专用管理地址。
+1. 打开“入口节点”，填写 SSH 地址、端口、用户名及密码或私钥。公网分享地址可单独填写，适用于 NAT 或专用管理地址。
 2. 测试连接。首次连接只读取 SSH 主机指纹，不发送认证凭据或执行远程命令。
 3. 核对指纹后明确确认信任，再进行完整环境检查。
 4. 保存节点。检查页面中的已有服务、监听端口及架构，再应用配置。
@@ -132,21 +135,25 @@ Linux 同架构发布包将 helper 与面板放在一起即可。Windows 管理 
 
 也可用 `XRAY_PANEL_NODECTL` 指向对应架构 ELF 文件的绝对路径。SSH 节点需要能执行此程序及 SFTP；非 root 远程账户需要相应 `sudo -n` 权限。私钥可粘贴，支持带口令的私钥。
 
-## 导入上游与创建中转
+## 导入出口节点与创建转发
 
-在“上游代理”粘贴一条或多条分享链接，也可添加订阅 URL 或导入高级 Xray outbound JSON。面板支持 VLESS、VMess、Trojan、Shadowsocks、SOCKS5、HTTP/HTTPS 常见配置。订阅支持逐行链接、整段 Base64，以及 SIP008 Shadowsocks JSON；刷新后同步对应来源，并保护正在被规则使用的上游。
+在“出口节点”粘贴一条或多条分享链接，也可添加订阅 URL 或导入高级 Xray outbound JSON。面板支持 VLESS、VMess、Trojan、Shadowsocks、SOCKS5、HTTP/HTTPS 常见配置。订阅支持逐行链接、整段 Base64，以及 SIP008 Shadowsocks JSON；刷新后同步对应来源，并保护正在被规则使用的上游。
 
 协议、传输和安全层分别处理，导入不会静默删除关键参数。旧认证、旧传输、插件依赖或核心不支持的组合会返回具体错误。高级 outbound JSON 用于补充上游参数，仍受面板的协议/传输白名单约束，应用前需通过所选核心的配置校验；未支持的组合会明确拒绝。完整 Xray JSON 仅提取选定出站，不接管原配置中的日志、入站、路由或管理接口。
 
-在“转发规则”选择节点、上游与监听端口。默认 REALITY 配置自动生成 UUID、X25519 密钥和 short ID；目标站与 SNI 可修改。目标站需要从中转服务器可达，并满足 REALITY 对 TLS / HTTP/2 等条件的要求。TLS 入口需要提供自己的证书和私钥。
+在“转发管理”选择入口节点、出口节点与监听端口。默认 REALITY 配置自动生成 UUID、X25519 密钥和 short ID；目标站与 SNI 可修改。目标站需要从中转服务器可达，并满足 REALITY 对 TLS / HTTP/2 等条件的要求。TLS 入口需要提供自己的证书和私钥。
 
 保存规则后，点击“应用节点配置”。保存与应用是不同状态，任务成功后才记录部署修订。一个节点的所有启用规则统一生成一份配置；每个入口明确路由到指定上游，默认出口为拒绝。
 
 分享链接与二维码在本机生成，不调用第三方二维码服务。每个账户在“设置”中复制自己的客户端订阅地址及轮换自己的令牌；个人订阅只包含该账户自己的启用入口，admin 也遵循这一范围，全局管理权限不会扩大个人订阅内容。订阅地址和分享链接包含连接凭据，应按密码保管。
 
-## 出口 IP 与状态含义
+## 出口节点可用性检测与出口 IP
 
-“检测出口”在所选中转节点启动受保护的回环 SOCKS 检测进程，使用同一上游 outbound，经代理请求 HTTPS IP 回显服务。它显示实际观察到的 IPv4 / IPv6、耗时、时间和失败原因。
+在“出口节点”列表点击“检测”，选择同一所属用户的入口节点后开始检测。只有一个候选时自动选中；存在有效历史检测时沿用该入口；没有候选时提示先检查入口节点。无需创建转发或应用业务配置。
+
+检测在所选入口节点启动受保护的回环 SOCKS 检测进程，使用该出口节点的完整 outbound 配置，经代理请求 HTTPS IP 回显服务。列表和弹窗显示检测来源、检测中、可用、部分可用或失败，以及实际 IPv4 / IPv6、请求耗时、时间和错误详情。检测状态按“入口节点 + 出口节点”区分，任务与结果持久关联，刷新页面后继续显示；新检测失败不会沿用上一次成功作为本次结果。
+
+仅 IPv6 成功会显示“部分可用”并保留 IPv4 错误，双栈均失败才判为检测失败。管理员检测其他用户的出口时，也必须选择该用户的入口节点。
 
 - **节点地址**：客户端连接中转节点的入口地址。
 - **上游地址**：第三方代理的连接地址。

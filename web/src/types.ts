@@ -84,6 +84,7 @@ export interface Job {
   id: string
   owner_id: string
   node_id: string
+  upstream_id?: string
   action: string
   status: string
   message: string
@@ -95,6 +96,7 @@ export interface Job {
 
 export interface ProbeResult {
   id: string
+  job_id?: string
   owner_id: string
   node_id: string
   upstream_id: string

@@ -30,6 +30,7 @@ type fakeRuntime struct {
 	applyError       error
 	probe            model.ProbeResult
 	probeError       error
+	probeFunc        func(context.Context, model.Node, model.Upstream) (model.ProbeResult, error)
 	inspected        model.Node
 	appliedNode      model.Node
 	appliedUpstreams []model.Upstream
@@ -73,7 +74,10 @@ func (f *fakeRuntime) Apply(ctx context.Context, node model.Node, upstreams []mo
 	return model.ApplyResult{Revision: "revision-" + node.ID, CoreVersion: model.DefaultCoreVersion}, nil
 }
 
-func (f *fakeRuntime) Probe(context.Context, model.Node, model.Upstream) (model.ProbeResult, error) {
+func (f *fakeRuntime) Probe(ctx context.Context, node model.Node, upstream model.Upstream) (model.ProbeResult, error) {
+	if f.probeFunc != nil {
+		return f.probeFunc(ctx, node, upstream)
+	}
 	return f.probe, f.probeError
 }
 func (f *fakeRuntime) Service(context.Context, model.Node, string) error { return nil }
@@ -114,7 +118,12 @@ func decodeResponse[T any](t *testing.T, response *httptest.ResponseRecorder, st
 
 func fixture(t *testing.T, runtime model.Runtime) (*Server, *http.Cookie) {
 	t.Helper()
-	s, err := New(Config{DataDir: t.TempDir(), Runtime: runtime})
+	return fixtureIn(t, t.TempDir(), runtime)
+}
+
+func fixtureIn(t *testing.T, directory string, runtime model.Runtime) (*Server, *http.Cookie) {
+	t.Helper()
+	s, err := New(Config{DataDir: directory, Runtime: runtime})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -354,6 +363,204 @@ func TestJobsSerializePerNodeAndPersistFailuresAndPartialProbes(t *testing.T) {
 	state = decodeResponse[model.State](t, request(t, s, "GET", "/api/state", nil, cookie), http.StatusOK)
 	if len(state.Probes) != 2 || state.Probes[0].Status != "failed" || state.Probes[0].Error == "" {
 		t.Fatal("failed probe was not persisted")
+	}
+}
+
+func TestProbeJobsPersistCorrelationAcrossQueueAndRestart(t *testing.T) {
+	runtime := &fakeRuntime{
+		started: make(chan string, 1), release: make(chan struct{}, 1),
+		probe: model.ProbeResult{
+			ID: "runtime-result", JobID: "runtime-job", OwnerID: "runtime-owner", NodeID: "runtime-node", UpstreamID: "runtime-upstream",
+			Status: "partial", IPv6: "2001:db8::17", Error: "IPv4 unavailable",
+		},
+	}
+	directory := t.TempDir()
+	s, cookie := fixtureIn(t, directory, runtime)
+	node := decodeResponse[model.Node](t, request(t, s, "POST", "/api/nodes", model.Node{Name: "Local", Kind: "local"}, cookie), http.StatusCreated)
+	upstreams := []model.Upstream{
+		decodeResponse[model.Upstream](t, request(t, s, "POST", "/api/upstreams", testUpstream(t), cookie), http.StatusCreated),
+		decodeResponse[model.Upstream](t, request(t, s, "POST", "/api/upstreams", testUpstream(t), cookie), http.StatusCreated),
+	}
+	response := request(t, s, "POST", "/api/nodes/"+node.ID+"/apply", nil, cookie)
+	apply := decodeResponse[model.Job](t, response, http.StatusAccepted)
+	if _, present := decodeResponse[map[string]any](t, response, http.StatusAccepted)["upstream_id"]; present {
+		t.Fatal("non-probe task exposed upstream_id")
+	}
+	select {
+	case <-runtime.started:
+	case <-time.After(3 * time.Second):
+		t.Fatal("blocking apply did not start")
+	}
+
+	// Repeating one target and interleaving another catches matching by node,
+	// upstream or recency instead of the exact task that produced each result.
+	expected := make(map[string]string)
+	for _, upstream := range []model.Upstream{upstreams[0], upstreams[1], upstreams[0]} {
+		response := request(t, s, "POST", "/api/nodes/"+node.ID+"/probe", map[string]string{"upstream_id": upstream.ID}, cookie)
+		job := decodeResponse[model.Job](t, response, http.StatusAccepted)
+		if decodeResponse[map[string]any](t, response, http.StatusAccepted)["upstream_id"] != upstream.ID {
+			t.Fatal("accepted probe omitted its target from the JSON response")
+		}
+		expected[job.ID] = upstream.ID
+	}
+	queued := decodeResponse[model.State](t, request(t, s, "GET", "/api/state", nil, cookie), http.StatusOK)
+	queuedCount := 0
+	for _, job := range queued.Jobs {
+		if target, found := expected[job.ID]; found {
+			queuedCount++
+			if job.Status != "queued" || job.UpstreamID != target {
+				t.Fatalf("queued probe lost its persisted target: %+v", job)
+			}
+		}
+	}
+	if queuedCount != len(expected) || len(queued.Probes) != 0 {
+		t.Fatal("queued probes were not durably recorded behind the active apply")
+	}
+	runtime.release <- struct{}{}
+	waitJob(t, s, cookie, apply.ID, "succeeded")
+	for id := range expected {
+		waitJob(t, s, cookie, id, "succeeded")
+	}
+
+	checkHistory := func(server *Server) {
+		t.Helper()
+		response := request(t, server, "GET", "/api/state", nil, cookie)
+		state := decodeResponse[model.State](t, response, http.StatusOK)
+		if len(state.Probes) != len(expected) {
+			t.Fatalf("got %d results for %d probe tasks", len(state.Probes), len(expected))
+		}
+		seenJobs, seenResults := make(map[string]bool), make(map[string]bool)
+		for _, probe := range state.Probes {
+			target, found := expected[probe.JobID]
+			if !found || seenJobs[probe.JobID] || probe.ID == "" || probe.ID == "runtime-result" || seenResults[probe.ID] || probe.UpstreamID != target || probe.NodeID != node.ID || probe.OwnerID != node.OwnerID {
+				t.Fatalf("result was not uniquely bound to its server-owned task: %+v", probe)
+			}
+			if probe.Status != "partial" || probe.IPv6 != "2001:db8::17" || probe.Error != "IPv4 unavailable" {
+				t.Fatalf("IPv6-only success lost its IPv4 diagnostics: %+v", probe)
+			}
+			seenJobs[probe.JobID], seenResults[probe.ID] = true, true
+		}
+		completedCount := 0
+		for _, job := range state.Jobs {
+			if target, found := expected[job.ID]; found {
+				completedCount++
+				if job.UpstreamID != target || job.Status != "succeeded" || job.Error != "" || job.FinishedAt == nil {
+					t.Fatalf("completed probe task lost its target or success: %+v", job)
+				}
+			}
+		}
+		if completedCount != len(expected) {
+			t.Fatal("completed probe tasks were missing from persisted history")
+		}
+		wire := decodeResponse[struct {
+			Probes []map[string]any `json:"probes"`
+		}](t, response, http.StatusOK)
+		for _, probe := range wire.Probes {
+			if id, ok := probe["job_id"].(string); !ok || expected[id] != probe["upstream_id"] {
+				t.Fatal("probe JSON did not expose the exact job_id correlation")
+			}
+		}
+	}
+	checkHistory(s)
+	if err := s.Close(); err != nil {
+		t.Fatal(err)
+	}
+	reopened, err := New(Config{DataDir: directory, Runtime: runtime})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := reopened.Close(); err != nil {
+			t.Error(err)
+		}
+	})
+	checkHistory(reopened)
+}
+
+func TestFailedAndInterruptedProbesKeepPersistedTarget(t *testing.T) {
+	for _, test := range []struct {
+		name, message string
+		panicRuntime  bool
+		deleteTarget  bool
+		shutdown      bool
+		wantResult    bool
+	}{
+		{name: "validation", message: "invalid upstream configuration", wantResult: true},
+		{name: "core-preparation", message: "requested fixed core preparation failed", wantResult: true},
+		{name: "runtime-panic", message: "节点运行时意外终止", panicRuntime: true},
+		{name: "missing-upstream", message: "探测上游已不存在", deleteTarget: true},
+		{name: "queued-shutdown", message: "任务因服务关闭或重启中断", shutdown: true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			calls := make(chan string, 1)
+			runtime := &fakeRuntime{started: make(chan string, 1), release: make(chan struct{}, 1)}
+			runtime.probeFunc = func(_ context.Context, _ model.Node, upstream model.Upstream) (model.ProbeResult, error) {
+				calls <- upstream.ID
+				if test.panicRuntime {
+					panic("deliberate runtime panic")
+				}
+				return model.ProbeResult{JobID: "runtime-job"}, errors.New(test.message)
+			}
+			directory := t.TempDir()
+			s, cookie := fixtureIn(t, directory, runtime)
+			node := decodeResponse[model.Node](t, request(t, s, "POST", "/api/nodes", model.Node{Name: "Local", Kind: "local"}, cookie), http.StatusCreated)
+			upstream := decodeResponse[model.Upstream](t, request(t, s, "POST", "/api/upstreams", testUpstream(t), cookie), http.StatusCreated)
+			apply := decodeResponse[model.Job](t, request(t, s, "POST", "/api/nodes/"+node.ID+"/apply", nil, cookie), http.StatusAccepted)
+			select {
+			case <-runtime.started:
+			case <-time.After(3 * time.Second):
+				t.Fatal("blocking apply did not start")
+			}
+			job := decodeResponse[model.Job](t, request(t, s, "POST", "/api/nodes/"+node.ID+"/probe", map[string]string{"upstream_id": upstream.ID}, cookie), http.StatusAccepted)
+			if test.deleteTarget {
+				// Simulate a stale queued reference through the store, without
+				// weakening the HTTP guards against deleting busy resources.
+				s.mu.Lock()
+				err := s.store.Commit(context.Background(), store.Changes{DeleteUpstreams: []string{upstream.ID}})
+				s.mu.Unlock()
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			status := "failed"
+			if test.shutdown {
+				status = "interrupted"
+			} else {
+				runtime.release <- struct{}{}
+				waitJob(t, s, cookie, apply.ID, "succeeded")
+				waitJob(t, s, cookie, job.ID, status)
+			}
+			if err := s.Close(); err != nil {
+				t.Fatal(err)
+			}
+			reopened, err := New(Config{DataDir: directory, Runtime: runtime})
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer reopened.Close()
+			finished := waitJob(t, reopened, cookie, job.ID, status)
+			if finished.UpstreamID != upstream.ID || finished.OwnerID != node.OwnerID || finished.FinishedAt == nil || !strings.Contains(finished.Error, test.message) {
+				t.Fatalf("failed probe could not be located by its persisted target after restart: %+v", finished)
+			}
+			state := decodeResponse[model.State](t, request(t, reopened, "GET", "/api/state", nil, cookie), http.StatusOK)
+			if test.wantResult {
+				if len(state.Probes) != 1 || state.Probes[0].JobID != job.ID || state.Probes[0].UpstreamID != upstream.ID || state.Probes[0].OwnerID != node.OwnerID || state.Probes[0].Status != "failed" || state.Probes[0].Error != finished.Error {
+					t.Fatalf("runtime preparation failure lost its result correlation: %+v", state.Probes)
+				}
+			} else if len(state.Probes) != 0 {
+				t.Fatal("task with no runtime result created a probe record")
+			}
+			select {
+			case target := <-calls:
+				if test.deleteTarget || test.shutdown || target != upstream.ID {
+					t.Fatal("runtime executed an unavailable or interrupted probe target")
+				}
+			default:
+				if !test.deleteTarget && !test.shutdown {
+					t.Fatal("failure scenario did not reach the probe runtime")
+				}
+			}
+		})
 	}
 }
 

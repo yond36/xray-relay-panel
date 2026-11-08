@@ -34,6 +34,9 @@ jobs:
         run: npm ci
       - name: Build frontend and Linux AMD64
         run: python3 -I tools/build.py --os linux --arch amd64
+      - name: Frontend probe state tests
+        working-directory: web
+        run: npm test
       - name: Backend tests and static checks
         run: |
           go test ./...

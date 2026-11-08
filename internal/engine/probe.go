@@ -180,6 +180,11 @@ waitReady:
 		return result, err
 	}
 	defer client.CloseIdleConnections()
+	return probeEgress(ctx, client, result)
+}
+
+// probeEgress checks both fixed echo endpoints through the isolated probe client.
+func probeEgress(ctx context.Context, client *http.Client, result model.ProbeResult) (model.ProbeResult, error) {
 	var v4, v6 string
 	var latency, latency6 int64
 	var err4, err6 error
@@ -200,6 +205,7 @@ waitReady:
 		if v6 != "" {
 			result.LatencyMS = latency6
 			result.Status = "partial"
+			return result, nil
 		}
 		return result, errors.New(result.Error)
 	}

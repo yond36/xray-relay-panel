@@ -99,6 +99,10 @@ func TestV1HTTPMigrationKeepsOldLoginSessionSubscriptionAndAppliedStatus(t *test
 	exec("INSERT INTO nodes(id,data) VALUES(?,?)", node.ID, seal("nodes", node.ID, node))
 	exec("INSERT INTO upstreams(id,source_id,data) VALUES(?,?,?)", upstream.ID, "", seal("upstreams", upstream.ID, upstream))
 	exec("INSERT INTO relays(id,node_id,upstream_id,data) VALUES(?,?,?,?)", relay.ID, node.ID, upstream.ID, seal("relays", relay.ID, relay))
+	// Historical probe records have no job_id, and their jobs have no
+	// upstream_id. Keep the original JSON rather than using today's model.
+	exec("INSERT INTO jobs(id,node_id,status,created_at,data) VALUES(?,?,?,?,?)", "legacy-job", node.ID, "succeeded", now.UnixNano(), seal("jobs", "legacy-job", map[string]any{"id": "legacy-job", "node_id": node.ID, "action": "probe", "status": "succeeded", "message": "legacy success", "created_at": now, "finished_at": now}))
+	exec("INSERT INTO probes(id,node_id,upstream_id,checked_at,data) VALUES(?,?,?,?,?)", "legacy-probe", node.ID, upstream.ID, now.UnixNano(), seal("probes", "legacy-probe", map[string]any{"id": "legacy-probe", "node_id": node.ID, "upstream_id": upstream.ID, "status": "ok", "ipv4": "203.0.113.17", "checked_at": now}))
 	exec("INSERT INTO applied(node_id,data) VALUES(?,?)", node.ID, seal("applied", node.ID, store.Applied{Revision: node.AppliedRevision, ConfigHash: oldHash, RelayIDs: []string{relay.ID}, UpstreamIDs: []string{upstream.ID}, Previous: &store.Applied{Revision: "older-revision", ConfigHash: "older-hash", RelayIDs: []string{relay.ID}, UpstreamIDs: []string{upstream.ID}}}))
 	if err := db.Close(); err != nil {
 		t.Fatal(err)
@@ -110,7 +114,21 @@ func TestV1HTTPMigrationKeepsOldLoginSessionSubscriptionAndAppliedStatus(t *test
 	}
 	defer s.Close()
 	oldCookie := &http.Cookie{Name: cookieName, Value: legacySession}
-	state := decodeResponse[model.State](t, request(t, s, "GET", "/api/state", nil, oldCookie), http.StatusOK)
+	response := request(t, s, "GET", "/api/state", nil, oldCookie)
+	state := decodeResponse[model.State](t, response, http.StatusOK)
+	if len(state.Jobs) != 1 || state.Jobs[0].ID != "legacy-job" || state.Jobs[0].UpstreamID != "" || len(state.Probes) != 1 || state.Probes[0].ID != "legacy-probe" || state.Probes[0].JobID != "" {
+		t.Fatal("migration failed to load probe history without correlation fields")
+	}
+	wireHistory := decodeResponse[struct {
+		Jobs   []map[string]any `json:"jobs"`
+		Probes []map[string]any `json:"probes"`
+	}](t, response, http.StatusOK)
+	if _, present := wireHistory.Jobs[0]["upstream_id"]; present {
+		t.Fatal("legacy probe job emitted a fabricated upstream_id")
+	}
+	if _, present := wireHistory.Probes[0]["job_id"]; present {
+		t.Fatal("legacy probe result emitted a fabricated job_id")
+	}
 	if state.CurrentUser == nil || state.CurrentUser.Role != model.RoleAdmin || state.CurrentUser.Username != "owner" || len(state.Nodes) != 1 || state.Nodes[0].ID != node.ID || state.Nodes[0].OwnerID != state.CurrentUser.ID || state.Settings.SubscriptionToken != legacyToken || state.Settings.RegistrationOpen {
 		t.Fatal("legacy session did not retain administrator ownership and personal token")
 	}

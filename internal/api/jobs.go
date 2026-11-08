@@ -19,8 +19,7 @@ import (
 )
 
 type task struct {
-	job        model.Job
-	upstreamID string
+	job model.Job
 }
 
 func (s *Server) applyNode(w http.ResponseWriter, r *http.Request) {
@@ -121,6 +120,9 @@ func (s *Server) enqueue(w http.ResponseWriter, r *http.Request, action, upstrea
 		return
 	}
 	job := model.Job{ID: id, OwnerID: node.OwnerID, NodeID: node.ID, Action: action, Status: "queued", Message: "等待节点任务执行", CreatedAt: time.Now().UTC()}
+	if action == "probe" {
+		job.UpstreamID = upstreamID
+	}
 	if !s.commit(w, r, store.Changes{Jobs: []model.Job{job}}) {
 		return
 	}
@@ -132,7 +134,7 @@ func (s *Server) enqueue(w http.ResponseWriter, r *http.Request, action, upstrea
 		go s.worker(queue)
 	}
 	s.busy[node.ID]++
-	queue <- task{job: job, upstreamID: upstreamID}
+	queue <- task{job: job}
 	writeJSON(w, http.StatusAccepted, job)
 }
 
@@ -222,7 +224,7 @@ func (s *Server) execute(work task) {
 			executionErr = errors.New("运行时未返回成功部署的 revision，远端状态需核对")
 		}
 	case "probe":
-		upstream, found := upstreamByID(state, work.upstreamID)
+		upstream, found := upstreamByID(state, work.job.UpstreamID)
 		if !found {
 			executionErr = errors.New("探测上游已不存在")
 			break
@@ -362,6 +364,7 @@ func (s *Server) finishTask(work task, node model.Node, state model.State, prior
 		}
 	}
 	if probe != nil {
+		probe.JobID = job.ID
 		if executionErr != nil {
 			probe.Status, probe.Error = "failed", job.Error
 		} else if probe.Status != "partial" {
