@@ -78,6 +78,10 @@ func (s *Server) saveRelay(w http.ResponseWriter, r *http.Request) {
 				writeError(w, http.StatusInternalServerError, "无法核对已应用规则")
 				return
 			}
+			if applied.PendingDeleteRelayID != "" {
+				writeError(w, http.StatusConflict, "原节点有尚未确认的删除部署，请先重新应用当前配置或重试删除")
+				return
+			}
 			if applied.ReferencesRelay(old.ID) {
 				writeError(w, http.StatusConflict, "移动规则前，请先在原节点禁用并应用该规则")
 				return
@@ -197,22 +201,40 @@ func (s *Server) deleteRelay(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotFound, "入口规则不存在")
 		return
 	}
-	if !s.requireIdle(w, relay.NodeID) {
+	node, found := nodeByID(state, relay.NodeID)
+	if !found || !actor(r).CanAccess(node.OwnerID) {
+		writeError(w, http.StatusNotFound, "入口引用的节点不存在")
 		return
 	}
-	applied, err := s.store.Applied(r.Context(), relay.NodeID)
+	if node.OwnerID != relay.OwnerID {
+		writeError(w, http.StatusBadRequest, "入口与节点须属于同一用户")
+		return
+	}
+	if node.Kind == "local" && !actor(r).IsAdmin() {
+		writeError(w, http.StatusForbidden, "本机节点仅限管理员操作")
+		return
+	}
+	if !s.requireIdle(w, node.ID) {
+		return
+	}
+	applied, err := s.store.Applied(r.Context(), node.ID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		writeError(w, http.StatusInternalServerError, "无法核对已应用规则")
 		return
 	}
-	if applied.ReferencesRelay(relay.ID) {
-		writeError(w, http.StatusConflict, "节点当前部署或可回滚配置仍引用此规则；请先禁用并应用替代配置，再删除规则")
+	if applied.ReferencesRelay(relay.ID) || applied.PendingDeleteRelayID != "" {
+		if _, supported := s.runtime.(model.RelayDeleter); !supported {
+			writeError(w, http.StatusServiceUnavailable, "节点运行时不支持安全删除已部署入口，请升级运行时后重试")
+			return
+		}
+		if _, err := xray.Generate(node, state.Upstreams, relaysWithout(state.Relays, relay.ID)); err != nil {
+			writeError(w, http.StatusBadRequest, configurationError(err))
+			return
+		}
+		s.enqueueJob(w, r, model.Job{OwnerID: node.OwnerID, NodeID: node.ID, RelayID: relay.ID, Action: "delete-relay"})
 		return
 	}
-	changes := store.Changes{DeleteRelays: []string{relay.ID}}
-	if node, found := nodeByID(state, relay.NodeID); found {
-		changes.Nodes = []model.Node{markPending(node)}
-	}
+	changes := store.Changes{DeleteRelays: []string{relay.ID}, Nodes: []model.Node{markPending(node)}}
 	if s.commit(w, r, changes) {
 		writeJSON(w, http.StatusOK, map[string]bool{"deleted": true, "pending_apply": true})
 	}

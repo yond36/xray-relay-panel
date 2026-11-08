@@ -1,4 +1,6 @@
-# Xray 中转面板 v0.2.6
+# Xray 中转面板 v0.2.7
+
+v0.2.7 支持直接删除已应用转发：点击删除并确认后，面板自动应用排除此规则的入口配置，处理相关回滚引用，成功后删除记录。任务失败或中断时保留规则及凭据，可以直接重试。删除会同时应用该入口其他待生效配置，并可能让现有连接短暂重连。验证记录见 [docs/verification-v0.2.7.md](docs/verification-v0.2.7.md)。
 
 v0.2.6 新建转发时，从 `10000..65535` 随机选择监听端口，避开同一入口节点已保存转发的端口；可点击“随机端口”重新抽取，手动填写的端口和编辑已有转发的端口保留。新建 REALITY 的默认 target / SNI 改为 `www.cloudflare.com:443` / `www.cloudflare.com`，与后端默认值一致。
 
@@ -39,10 +41,10 @@ v0.2.1 修复 SOCKS 分享链接中 Base64 用户名与密码的解析，支持�
 curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/install.sh | sudo bash -s -- install
 ```
 
-固定安装本项目的 `v0.2.6`：
+固定安装本项目的 `v0.2.7`：
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/install.sh | sudo bash -s -- install --version v0.2.6
+curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/install.sh | sudo bash -s -- install --version v0.2.7
 ```
 
 安装入口支持 Linux amd64 / arm64，将最新正式版解析为固定 tag，并从同一 tag 下载发行包及 `.sha256`。它先校验 SHA-256、归档路径和文件类型，再安装面板；运行发行程序无需 Go 或 Node.js。安装、升级及卸载需要 Python 3，安装入口会检查并补齐 curl、CA 证书、Python 3、sudo 等必需工具。SHA-256 用于校验下载内容与发布方校验文件一致，不等于独立的签名认证。
@@ -52,7 +54,7 @@ curl -fsSL https://raw.githubusercontent.com/yond36/xray-relay-panel/main/instal
 ```sh
 sudo xray-relay-panel status
 sudo xray-relay-panel upgrade
-sudo xray-relay-panel upgrade --version v0.2.6
+sudo xray-relay-panel upgrade --version v0.2.7
 sudo xray-relay-panel uninstall
 ```
 
@@ -154,6 +156,10 @@ Linux 同架构发布包将 helper 与面板放在一起即可。Windows 管理 
 默认 REALITY 配置自动生成 UUID、X25519 密钥和 short ID；新建时 target / SNI 默认为 `www.cloudflare.com:443` / `www.cloudflare.com`，与后端一致，可按需修改。目标站需要从中转服务器可达，并满足 REALITY 对 TLS / HTTP/2 等条件的要求；保存或出口探测不代表目标站已通过 REALITY 兼容性验证。TLS 入口需要提供自己的证书和私钥。
 
 保存规则后，点击“应用节点配置”。保存与应用是不同状态，任务成功后才记录部署修订。一个节点的所有启用规则统一生成一份配置；每个入口明确路由到指定上游，默认出口为拒绝。
+
+删除转发时点击“删除”并确认即可。已部署或被回滚配置引用的规则会提交后台删除任务，自动应用排除该规则后的入口配置，处理对应回滚引用，成功后删除记录；尚未部署的规则直接删除。删除会一并应用该入口其他待生效配置，同一专用节点的连接可能短暂重连。删除最后一条转发后保留运行中的无入口、默认拒绝配置。
+
+应用失败、入口离线或任务中断时保留原规则和凭据，可直接重试删除。任务可能已完成部分节点操作；在重新删除或显式应用配置完成协调前，面板会阻止使用不确定的回滚记录。升级后刷新页面即可使用新版流程。
 
 分享链接与二维码在本机生成，不调用第三方二维码服务。每个账户在“设置”中复制自己的客户端订阅地址及轮换自己的令牌；个人订阅只包含该账户自己的启用入口，admin 也遵循这一范围，全局管理权限不会扩大个人订阅内容。订阅地址和分享链接包含连接凭据，应按密码保管。
 

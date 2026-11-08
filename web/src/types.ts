@@ -85,6 +85,7 @@ export interface Job {
   owner_id: string
   node_id: string
   upstream_id?: string
+  relay_id?: string
   action: string
   status: string
   message: string
@@ -93,6 +94,8 @@ export interface Job {
   created_at: string
   finished_at?: string | null
 }
+
+export type RelayDeleteResult = Job | { deleted: true; pending_apply?: boolean } | void
 
 export interface ProbeResult {
   id: string

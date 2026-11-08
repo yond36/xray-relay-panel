@@ -26,6 +26,7 @@ type Runtime struct {
 }
 
 var _ model.Runtime = (*Runtime)(nil)
+var _ model.RelayDeleter = (*Runtime)(nil)
 
 func New(o Options) *Runtime {
 	if o.DataDir == "" {
@@ -99,6 +100,22 @@ func (r *Runtime) Inspect(ctx context.Context, n model.Node) (model.NodeInspecti
 	return result, nil
 }
 func (r *Runtime) Apply(ctx context.Context, n model.Node, upstreams []model.Upstream, relays []model.Relay) (model.ApplyResult, error) {
+	return r.apply(ctx, n, upstreams, relays, "")
+}
+
+func (r *Runtime) DeleteRelay(ctx context.Context, n model.Node, upstreams []model.Upstream, relays []model.Relay, removedRelayID string) (model.ApplyResult, error) {
+	if removedRelayID == "" {
+		return model.ApplyResult{}, errors.New("removed relay id is required")
+	}
+	for _, relay := range relays {
+		if relay.ID == removedRelayID {
+			return model.ApplyResult{}, errors.New("deleted relay is still present in candidate relays")
+		}
+	}
+	return r.apply(ctx, n, upstreams, relays, removedRelayID)
+}
+
+func (r *Runtime) apply(ctx context.Context, n model.Node, upstreams []model.Upstream, relays []model.Relay, removedRelayID string) (model.ApplyResult, error) {
 	var result model.ApplyResult
 	config, err := xray.Generate(n, upstreams, relays)
 	if err != nil {
@@ -122,7 +139,7 @@ func (r *Runtime) Apply(ctx context.Context, n model.Node, upstreams []model.Ups
 		return result, err
 	}
 	defer t.Close()
-	req := nodeRequest{Operation: "apply", Version: version, Architecture: t.Arch(), Config: config}
+	req := nodeRequest{Operation: "apply", Version: version, Architecture: t.Arch(), Config: config, RemovedRelayID: removedRelayID}
 	cleanup, err := r.attachRelease(ctx, t, &req)
 	if err != nil {
 		return result, err

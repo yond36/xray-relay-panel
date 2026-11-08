@@ -35,6 +35,58 @@ export const isRunning = (job: Job) => ['queued', 'pending', 'running', 'in_prog
 export const isSuccess = (value: string) => ['success', 'succeeded', 'completed', 'done', 'ok', 'active', 'running', 'ready', 'applied', 'deployed'].includes(value.toLowerCase())
 export const isFailure = (value: string) => ['failed', 'failure', 'error', 'unhealthy', 'offline', 'interrupted', 'timeout', 'cancelled', 'canceled'].includes(value.toLowerCase())
 export const sortedJobs = (jobs: Job[]) => [...jobs].sort((a, b) => stamp(b.created_at) - stamp(a.created_at))
+export const isJobSuccess = (status: string) => ['success', 'succeeded', 'completed', 'done', 'ok'].includes(status.toLowerCase())
+
+export function mergeJobs(jobs: Job[], registered: Job[]) {
+  return [...registered.filter(item => !jobs.some(job => job.id === item.id)), ...jobs]
+}
+
+export interface RelayDeleteView {
+  phase: 'idle' | 'deleting' | 'succeeded' | 'failed'
+  job?: Job
+  error?: string
+}
+
+export function relayDeleteState(jobs: Job[], relayID: string, jobID?: string): RelayDeleteView {
+  const job = jobID ? jobs.find(item => item.id === jobID && item.action === 'delete-relay' && (!item.relay_id || item.relay_id === relayID)) : sortedJobs(jobs).find(item => item.action === 'delete-relay' && item.relay_id === relayID)
+  if (!job) return { phase: jobID ? 'deleting' : 'idle' }
+  if (isFailure(job.status)) return { phase: 'failed', job, error: job.error || job.message || statusLabel(job.status) }
+  if (isJobSuccess(job.status)) return { phase: 'succeeded', job }
+  return { phase: 'deleting', job }
+}
+
+export function relayDeleteNotice(previous: Job | undefined, job: Job): { message: string; kind: 'success' | 'error' } | undefined {
+  if (!previous || previous.id !== job.id || job.action !== 'delete-relay' || isJobSuccess(previous.status) || isFailure(previous.status)) return
+  const view = relayDeleteState([job], job.relay_id || '', job.id)
+  if (view.phase === 'succeeded') return { message: '转发删除完成', kind: 'success' }
+  if (view.phase === 'failed') return { message: `转发删除未完成：${view.error}。转发记录已保留，可直接重试删除。`, kind: 'error' }
+}
+
+export class JobRegistry {
+  private registered = new Map<string, Job>()
+  private observed = new Map<string, Job>()
+
+  register(job: Job) {
+    // An accepted DELETE still needs an authoritative state refresh, even if it already finished.
+    const submitted = job.action === 'delete-relay' && !isRunning(job) ? { ...job, status: 'pending' } : job
+    this.registered.set(job.id, submitted)
+    this.observed.set(job.id, submitted)
+    return submitted
+  }
+
+  reconcile(jobs: Job[]) {
+    const notices: { message: string; kind: 'success' | 'error' }[] = []
+    for (const job of jobs) {
+      const notice = relayDeleteNotice(this.observed.get(job.id), job)
+      if (notice) notices.push(notice)
+      this.observed.set(job.id, job)
+      this.registered.delete(job.id)
+    }
+    return { jobs: mergeJobs(jobs, [...this.registered.values()]), notices }
+  }
+
+  clear() { this.registered.clear(); this.observed.clear() }
+}
 
 export function statusLabel(status: string) {
   const labels: Record<string, string> = {
@@ -48,15 +100,15 @@ export function statusLabel(status: string) {
   return labels[status.toLowerCase()] || status || '待检查'
 }
 export function actionLabel(action: string) {
-  const labels: Record<string, string> = { apply: '部署 / 应用配置', deploy: '部署节点', probe: '检测出口节点', start: '启动服务', stop: '停止服务', restart: '重启服务', rollback: '回滚配置', 'service:start': '启动服务', 'service:stop': '停止服务', 'service:restart': '重启服务', 'service:rollback': '回滚配置' }
+  const labels: Record<string, string> = { apply: '部署 / 应用配置', deploy: '部署节点', 'delete-relay': '删除转发 / 应用配置', probe: '检测出口节点', start: '启动服务', stop: '停止服务', restart: '重启服务', rollback: '回滚配置', 'service:start': '启动服务', 'service:stop': '停止服务', 'service:restart': '重启服务', 'service:rollback': '回滚配置' }
   return labels[action] || action
 }
 
 export function relayApplyState(relay: Relay, state: State): { label: string; tone: 'neutral' | 'warning' | 'success' } {
   const node = state.nodes.find(item => item.id === relay.node_id)
-  if (state.jobs.some(job => job.node_id === relay.node_id && ['apply', 'deploy'].includes(job.action) && isRunning(job))) return { label: '正在应用', tone: 'warning' }
+  if (state.jobs.some(job => job.node_id === relay.node_id && ['apply', 'deploy', 'delete-relay'].includes(job.action) && isRunning(job))) return { label: '正在应用', tone: 'warning' }
   if (!node?.applied_revision) return { label: '已保存 · 未应用', tone: 'neutral' }
-  const applied = sortedJobs(state.jobs).find(job => job.node_id === relay.node_id && ['apply', 'deploy'].includes(job.action) && isSuccess(job.status) && job.revision === node.applied_revision)
+  const applied = sortedJobs(state.jobs).find(job => job.node_id === relay.node_id && ['apply', 'deploy', 'delete-relay'].includes(job.action) && isJobSuccess(job.status) && job.revision === node.applied_revision)
   const upstream = state.upstreams.find(item => item.id === relay.upstream_id)
   const latestChange = Math.max(stamp(relay.updated_at), stamp(upstream?.updated_at))
   if (!applied || latestChange > stamp(applied.created_at)) return { label: '待应用', tone: 'warning' }

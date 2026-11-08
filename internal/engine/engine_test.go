@@ -26,6 +26,7 @@ import (
 
 	"golang.org/x/crypto/ssh"
 	"xrayrelay/internal/model"
+	"xrayrelay/internal/xray"
 )
 
 func makeZIP(t *testing.T, name string, mode os.FileMode) string {
@@ -401,6 +402,268 @@ func TestProbeEgressAggregatesValidatedEchoResponses(t *testing.T) {
 				t.Fatalf("fixed echo endpoints were not both checked: IPv4 %d, IPv6 %d", hits4.Load(), hits6.Load())
 			}
 		})
+	}
+}
+
+func TestDeleteRelayRejectsTargetInCandidate(t *testing.T) {
+	r := New(Options{DataDir: t.TempDir()})
+	for _, tc := range []struct {
+		name, removedID string
+		relays          []model.Relay
+		want            string
+	}{
+		{name: "missing-id", want: "removed relay id is required"},
+		{name: "enabled-target", removedID: "removed", relays: []model.Relay{{ID: "removed", NodeID: "node", Enabled: true}}, want: "still present"},
+		{name: "disabled-target", removedID: "removed", relays: []model.Relay{{ID: "removed", NodeID: "node"}}, want: "still present"},
+		{name: "target-on-another-node", removedID: "removed", relays: []model.Relay{{ID: "removed", NodeID: "other"}}, want: "still present"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := r.DeleteRelay(context.Background(), model.Node{ID: "node", Kind: "invalid"}, nil, tc.relays, tc.removedID)
+			if err == nil || !strings.Contains(err.Error(), tc.want) || result.Revision != "" {
+				t.Fatalf("invalid deletion accepted: result %+v, error %v", result, err)
+			}
+		})
+	}
+}
+
+func TestDeleteRelaySharesApplyNodeLock(t *testing.T) {
+	r := New(Options{DataDir: t.TempDir()})
+	node := model.Node{ID: "node", Kind: "local"}
+	unlock, err := r.lock(context.Background(), node)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer unlock()
+	for _, action := range []string{"apply", "delete-relay"} {
+		t.Run(action, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Millisecond)
+			defer cancel()
+			var result model.ApplyResult
+			var err error
+			if action == "apply" {
+				result, err = r.Apply(ctx, node, nil, nil)
+			} else {
+				result, err = r.DeleteRelay(ctx, node, nil, nil, "removed")
+			}
+			if !errors.Is(err, context.DeadlineExceeded) || result.Revision != "" {
+				t.Fatalf("operation bypassed the shared node lock: result %+v, error %v", result, err)
+			}
+		})
+	}
+}
+
+func deleteRelayConfig(t *testing.T, relayIDs ...string) []byte {
+	t.Helper()
+	upstreams, errs := xray.ParseImports("socks5://127.0.0.1:1080")
+	if len(errs) != 0 || len(upstreams) != 1 {
+		t.Fatalf("upstream fixture: %v", errs)
+	}
+	upstreams[0].ID = "upstream"
+	relays := make([]model.Relay, 0, len(relayIDs))
+	for i, id := range relayIDs {
+		relay := model.Relay{ID: id, NodeID: "node", UpstreamID: "upstream", Enabled: true, Protocol: "socks", Listen: "127.0.0.1", Port: 31000 + i, Password: "relay-test-secret"}
+		if err := xray.PrepareRelay(&relay); err != nil {
+			t.Fatal(err)
+		}
+		relays = append(relays, relay)
+	}
+	config, err := xray.Generate(model.Node{ID: "node"}, upstreams, relays)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return config
+}
+
+func TestDeleteRelayHelperRejectsCandidateWithTarget(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		config []byte
+		bad    bool
+	}{
+		{name: "target", config: deleteRelayConfig(t, "removed"), bad: true},
+		{name: "target-among-others", config: deleteRelayConfig(t, "kept", "removed"), bad: true},
+		{name: "other-relay", config: deleteRelayConfig(t, "kept")},
+		{name: "empty", config: deleteRelayConfig(t)},
+		{name: "malformed", config: []byte(`{"inbounds":`), bad: true},
+		{name: "invalid-tag", config: []byte(`{"inbounds":[{"tag":false}]}`), bad: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := validateDeletedRelayConfig(tc.config, "removed"); (err != nil) != tc.bad {
+				t.Fatalf("candidate validation error = %v, want rejection %t", err, tc.bad)
+			}
+		})
+	}
+}
+
+func revisionFixture(t *testing.T) revisionLinks {
+	t.Helper()
+	root := t.TempDir()
+	if err := os.Mkdir(filepath.Join(root, "revisions"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	probe := filepath.Join(root, ".symlink-probe")
+	if err := os.Symlink("revisions", probe); err != nil {
+		if goruntime.GOOS == "windows" && (errors.Is(err, os.ErrPermission) || strings.Contains(err.Error(), "privilege")) {
+			t.Skipf("revision fixtures need symlink permission: %v", err)
+		}
+		t.Fatal(err)
+	}
+	if err := os.Remove(probe); err != nil {
+		t.Fatal(err)
+	}
+	return revisionLinks{root: root}
+}
+
+func writeRevisionFixture(t *testing.T, links revisionLinks, id string, config []byte) {
+	t.Helper()
+	path := filepath.Join(links.root, "revisions", id)
+	if err := os.Mkdir(path, 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(path, "config.json"), config, 0600); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestDeleteRelayUpdatesActualRollbackHistory(t *testing.T) {
+	const current, previous, activated = "aaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbbbbbbbbbb", "cccccccccccccccccccccccc"
+	for _, tc := range []struct {
+		name       string
+		oldCurrent []byte
+		removedID  string
+		want       string
+	}{
+		{name: "current-contains-target", oldCurrent: deleteRelayConfig(t, "removed"), removedID: "removed"},
+		{name: "only-previous-contains-target", oldCurrent: deleteRelayConfig(t, "kept"), removedID: "removed", want: current},
+		{name: "empty-current-is-safe", oldCurrent: deleteRelayConfig(t), removedID: "removed", want: current},
+		{name: "no-current-clears-previous", removedID: "removed"},
+		{name: "ordinary-apply-keeps-current", oldCurrent: deleteRelayConfig(t, "removed"), want: current},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			links := revisionFixture(t)
+			old := ""
+			if tc.oldCurrent != nil {
+				writeRevisionFixture(t, links, current, tc.oldCurrent)
+				old = current
+			}
+			writeRevisionFixture(t, links, previous, deleteRelayConfig(t, "removed"))
+			writeRevisionFixture(t, links, activated, deleteRelayConfig(t))
+			if err := links.switchTo("current", activated); err != nil {
+				t.Fatal(err)
+			}
+			if err := links.switchTo("previous", previous); err != nil {
+				t.Fatal(err)
+			}
+			enabled := false
+			err := finishApply(context.Background(), links, old, tc.removedID, func(context.Context) error {
+				enabled = true
+				got, err := links.read("previous")
+				if err != nil || got != tc.want {
+					t.Fatalf("unsafe rollback still reachable before enable: revision %q, error %v", got, err)
+				}
+				return nil
+			})
+			if err != nil || !enabled {
+				t.Fatalf("apply finalization failed: enable %t, error %v", enabled, err)
+			}
+			got, err := links.read("current")
+			if err != nil || got != activated {
+				t.Fatalf("active revision changed during history update: %q, %v", got, err)
+			}
+			if tc.want == "" {
+				if _, err := os.Lstat(filepath.Join(links.root, "previous")); !os.IsNotExist(err) {
+					t.Fatalf("rollback should find no previous revision, got %v", err)
+				}
+			} else if tc.removedID != "" {
+				config, err := os.ReadFile(filepath.Join(links.root, "revisions", tc.want, "config.json"))
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err := validateDeletedRelayConfig(config, tc.removedID); err != nil {
+					t.Fatalf("rollback could restore deleted relay: %v", err)
+				}
+			}
+			if _, err := os.Stat(filepath.Join(links.root, "revisions", previous, "config.json")); err != nil {
+				t.Fatalf("unlinked backup revision was deleted: %v", err)
+			}
+		})
+	}
+}
+
+func TestDeleteRelayHistoryFailuresReturnError(t *testing.T) {
+	const current = "aaaaaaaaaaaaaaaaaaaaaaaa"
+	for _, tc := range []string{"previous-is-directory", "invalid-current-config", "missing-current-config", "enable-fails"} {
+		t.Run(tc, func(t *testing.T) {
+			links := revisionFixture(t)
+			config := deleteRelayConfig(t, "removed")
+			if tc == "invalid-current-config" {
+				config = []byte(`{"inbounds":false}`)
+			}
+			writeRevisionFixture(t, links, current, config)
+			if tc == "missing-current-config" {
+				if err := os.Remove(filepath.Join(links.root, "revisions", current, "config.json")); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if tc == "previous-is-directory" {
+				path := filepath.Join(links.root, "previous")
+				if err := os.Mkdir(path, 0700); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(filepath.Join(path, "sentinel"), []byte("keep"), 0600); err != nil {
+					t.Fatal(err)
+				}
+			} else if err := links.switchTo("previous", current); err != nil {
+				t.Fatal(err)
+			}
+			var enabled bool
+			err := finishApply(context.Background(), links, current, "removed", func(context.Context) error {
+				enabled = true
+				return errors.New("test enable failed")
+			})
+			if err == nil {
+				t.Fatal("failed apply finalization was reported as success")
+			}
+			if enabled != (tc == "enable-fails") {
+				t.Fatalf("enable ran before rollback history was safe: %t, %v", enabled, err)
+			}
+			if tc == "previous-is-directory" {
+				if data, err := os.ReadFile(filepath.Join(links.root, "previous", "sentinel")); err != nil || string(data) != "keep" {
+					t.Fatalf("non-symlink previous path was modified: %q, %v", data, err)
+				}
+			}
+			if tc == "enable-fails" {
+				if previous, err := links.read("previous"); err != nil || previous != "" {
+					t.Fatalf("unsafe rollback remained after enable failure: %q, %v", previous, err)
+				}
+			}
+		})
+	}
+}
+
+func TestDeleteRelayOnlyUnlinksFixedPreviousPath(t *testing.T) {
+	links := revisionFixture(t)
+	outside := t.TempDir()
+	sentinel := filepath.Join(outside, "sentinel")
+	if err := os.WriteFile(sentinel, []byte("keep"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(outside, filepath.Join(links.root, "previous")); err != nil {
+		t.Fatal(err)
+	}
+	if err := links.retainPrevious("", "removed"); err != nil {
+		t.Fatal(err)
+	}
+	if data, err := os.ReadFile(sentinel); err != nil || string(data) != "keep" {
+		t.Fatalf("cleanup followed an untrusted previous target: %q, %v", data, err)
+	}
+	for _, link := range []string{"../outside", "/tmp/previous", "revisions"} {
+		if err := links.switchTo(link, strings.Repeat("a", 24)); err == nil {
+			t.Fatalf("untrusted link path accepted: %q", link)
+		}
+		if _, err := links.read(link); err == nil {
+			t.Fatalf("untrusted link path read: %q", link)
+		}
 	}
 }
 

@@ -21,6 +21,7 @@ import (
 
 	"xrayrelay/internal/coreversion"
 	"xrayrelay/internal/model"
+	"xrayrelay/internal/xray"
 )
 
 const installRoot = "/opt/xray-relay-panel-node"
@@ -54,14 +55,15 @@ WantedBy=multi-user.target
 `
 
 type nodeRequest struct {
-	Operation    string          `json:"operation"`
-	Action       string          `json:"action,omitempty"`
-	Version      string          `json:"version,omitempty"`
-	Architecture string          `json:"architecture,omitempty"`
-	Archive      string          `json:"archive,omitempty"`
-	SHA256       string          `json:"sha256,omitempty"`
-	Config       json.RawMessage `json:"config,omitempty"`
-	Upstream     model.Upstream  `json:"upstream,omitempty"`
+	Operation      string          `json:"operation"`
+	Action         string          `json:"action,omitempty"`
+	Version        string          `json:"version,omitempty"`
+	Architecture   string          `json:"architecture,omitempty"`
+	Archive        string          `json:"archive,omitempty"`
+	SHA256         string          `json:"sha256,omitempty"`
+	Config         json.RawMessage `json:"config,omitempty"`
+	RemovedRelayID string          `json:"removed_relay_id,omitempty"`
+	Upstream       model.Upstream  `json:"upstream,omitempty"`
 }
 type nodeResponse struct {
 	Inspection *model.NodeInspection `json:"inspection,omitempty"`
@@ -185,8 +187,18 @@ func atomicFile(path string, data []byte, mode os.FileMode) error {
 	}
 	return os.Rename(name, path)
 }
+
+type revisionLinks struct{ root string }
+
 func readRevision(link string) (string, error) {
-	p := filepath.Join(installRoot, link)
+	return (revisionLinks{root: installRoot}).read(link)
+}
+
+func (links revisionLinks) read(link string) (string, error) {
+	if link != "current" && link != "previous" {
+		return "", errors.New("invalid managed revision link")
+	}
+	p := filepath.Join(links.root, link)
 	target, err := os.Readlink(p)
 	if os.IsNotExist(err) {
 		return "", nil
@@ -201,7 +213,7 @@ func readRevision(link string) (string, error) {
 	if filepath.Dir(clean) != "revisions" || !validRevision(filepath.Base(clean)) {
 		return "", errors.New("managed revision link escapes revision directory")
 	}
-	dir := filepath.Join(installRoot, clean)
+	dir := filepath.Join(links.root, clean)
 	info, err := os.Lstat(dir)
 	if err != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
 		return "", errors.New("managed revision is not a real directory")
@@ -216,16 +228,113 @@ func validRevision(s string) bool {
 	return err == nil
 }
 func switchRevision(link, id string) error {
+	return (revisionLinks{root: installRoot}).switchTo(link, id)
+}
+
+func (links revisionLinks) switchTo(link, id string) error {
+	if link != "current" && link != "previous" {
+		return errors.New("invalid managed revision link")
+	}
 	if !validRevision(id) {
 		return errors.New("invalid revision id")
 	}
-	temporary := filepath.Join(installRoot, "."+link+"-"+id)
+	temporary := filepath.Join(links.root, "."+link+"-"+id)
 	_ = os.Remove(temporary)
 	if err := os.Symlink(filepath.Join("revisions", id), temporary); err != nil {
 		return err
 	}
 	defer os.Remove(temporary)
-	return os.Rename(temporary, filepath.Join(installRoot, link))
+	return os.Rename(temporary, filepath.Join(links.root, link))
+}
+
+func configHasRelay(config []byte, relayID string) (bool, error) {
+	var c struct {
+		Inbounds []struct {
+			Tag string `json:"tag"`
+		} `json:"inbounds"`
+	}
+	if err := json.Unmarshal(config, &c); err != nil {
+		return false, errors.New("invalid relay inbound configuration")
+	}
+	wanted := xray.RelayInboundTag(relayID)
+	for _, inbound := range c.Inbounds {
+		if inbound.Tag == wanted {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func validateDeletedRelayConfig(config []byte, removedRelayID string) error {
+	if removedRelayID == "" {
+		return nil
+	}
+	found, err := configHasRelay(config, removedRelayID)
+	if err != nil {
+		return err
+	}
+	if found {
+		return errors.New("deleted relay is still present in candidate configuration")
+	}
+	return nil
+}
+
+// retainPrevious runs after activation, while applyNode still holds the node lock.
+// Only an old current that cannot restore the deleted relay remains reachable.
+func (links revisionLinks) retainPrevious(current, removedRelayID string) error {
+	if removedRelayID != "" && current != "" {
+		if !validRevision(current) {
+			return errors.New("invalid revision id")
+		}
+		path := filepath.Join(links.root, "revisions", current, "config.json")
+		info, err := os.Lstat(path)
+		if err != nil {
+			return err
+		}
+		if !info.Mode().IsRegular() {
+			return errors.New("managed revision configuration must be a regular file")
+		}
+		config, err := readPrivateFile(path, maxImportConfig)
+		if err != nil {
+			return err
+		}
+		found, err := configHasRelay(config, removedRelayID)
+		if err != nil {
+			return err
+		}
+		if found {
+			current = ""
+		}
+	}
+	if current != "" {
+		return links.switchTo("previous", current)
+	}
+	if removedRelayID == "" {
+		return nil
+	}
+	// Remove only this fixed symlink, never its target or a revision directory.
+	path := filepath.Join(links.root, "previous")
+	info, err := os.Lstat(path)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if info.Mode()&os.ModeSymlink == 0 {
+		return errors.New("managed previous revision link must be a symlink")
+	}
+	return os.Remove(path)
+}
+
+func finishApply(ctx context.Context, links revisionLinks, current, removedRelayID string, enable func(context.Context) error) error {
+	if err := links.retainPrevious(current, removedRelayID); err != nil {
+		return fmt.Errorf("service applied but could not update previous revision link: %w", err)
+	}
+	if err := enable(ctx); err != nil {
+		return errors.New("service is running but enabling its own boot unit failed")
+	}
+	return nil
 }
 func metadata(id string) (revisionMetadata, error) {
 	var m revisionMetadata
@@ -270,6 +379,9 @@ func applyNode(ctx context.Context, req nodeRequest) (model.ApplyResult, error) 
 	}
 	if !json.Valid(req.Config) || len(req.Config) > maxImportConfig {
 		return result, errors.New("invalid candidate configuration")
+	}
+	if err := validateDeletedRelayConfig(req.Config, req.RemovedRelayID); err != nil {
+		return result, err
 	}
 	if err := ensurePortsAvailable(ctx, req.Config); err != nil {
 		return result, err
@@ -379,13 +491,11 @@ func applyNode(ctx context.Context, req nodeRequest) (model.ApplyResult, error) 
 		}
 		return result, errors.New("new service failed to start; previous binary and configuration restored")
 	}
-	if previous != "" {
-		if err := switchRevision("previous", previous); err != nil {
-			return result, fmt.Errorf("service applied but could not retain previous revision link: %w", err)
-		}
-	}
-	if _, err := systemctl(ctx, "enable"); err != nil {
-		return result, errors.New("service is running but enabling its own boot unit failed")
+	if err := finishApply(ctx, revisionLinks{root: installRoot}, previous, req.RemovedRelayID, func(ctx context.Context) error {
+		_, err := systemctl(ctx, "enable")
+		return err
+	}); err != nil {
+		return result, err
 	}
 	result = model.ApplyResult{Revision: id, CoreVersion: req.Version, Message: "isolated Xray revision validated and activated"}
 	return result, nil

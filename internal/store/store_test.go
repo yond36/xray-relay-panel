@@ -34,10 +34,18 @@ func TestEncryptedStateSurvivesRestartAndInterruptsJobs(t *testing.T) {
 	now := time.Now().UTC()
 	node := model.Node{ID: "node-one", Name: "SSH node", Kind: "ssh", Password: secret, Status: "ready", AppliedRevision: "previous-revision"}
 	settings := model.Settings{SubscriptionToken: secret, CoreVersion: model.DefaultCoreVersion}
-	if err := database.Commit(ctx, Changes{Nodes: []model.Node{node}, Settings: &settings, Jobs: []model.Job{
-		{ID: "running-job", NodeID: node.ID, Action: "apply", Status: "running", CreatedAt: now},
-		{ID: "queued-job", NodeID: node.ID, Action: "probe", Status: "queued", CreatedAt: now},
-	}}); err != nil {
+	upstream := model.Upstream{ID: "upstream-one", Outbound: []byte(`{"protocol":"freedom"}`)}
+	relay := model.Relay{ID: "relay-one", NodeID: node.ID, UpstreamID: upstream.ID, Enabled: true, Password: secret}
+	applied := Applied{Revision: node.AppliedRevision, RelayIDs: []string{relay.ID}, UpstreamIDs: []string{upstream.ID}, PendingDeleteRelayID: relay.ID,
+		Previous: &Applied{Revision: "older-revision", RelayIDs: []string{relay.ID}, UpstreamIDs: []string{upstream.ID}}}
+	if err := database.Commit(ctx, Changes{
+		Nodes: []model.Node{node}, Settings: &settings, Upstreams: []model.Upstream{upstream}, Relays: []model.Relay{relay}, Applied: map[string]Applied{node.ID: applied},
+		Jobs: []model.Job{
+			{ID: "running-job", NodeID: node.ID, Action: "apply", Status: "running", CreatedAt: now},
+			{ID: "queued-job", NodeID: node.ID, UpstreamID: upstream.ID, Action: "probe", Status: "queued", CreatedAt: now},
+			{ID: "deleting-job", NodeID: node.ID, RelayID: relay.ID, Action: "delete-relay", Status: "running", CreatedAt: now},
+		},
+	}); err != nil {
 		t.Fatal(err)
 	}
 	var ciphertext []byte
@@ -69,9 +77,22 @@ func TestEncryptedStateSurvivesRestartAndInterruptsJobs(t *testing.T) {
 	if len(state.Nodes) != 1 || state.Nodes[0].Password != secret || state.Nodes[0].AppliedRevision != "previous-revision" || state.Nodes[0].Status != "interrupted" {
 		t.Fatal("restarted state lost credentials, revision, or interrupted status")
 	}
+	if len(state.Relays) != 1 || state.Relays[0].ID != relay.ID || state.Relays[0].Password != secret || !state.Relays[0].Enabled {
+		t.Fatal("restart deleted or modified an unconfirmed deletion's original relay")
+	}
+	pending, err := database.Applied(ctx, node.ID)
+	if err != nil || pending.PendingDeleteRelayID != relay.ID || pending.Revision != applied.Revision || pending.Previous == nil || pending.Previous.Revision != applied.Previous.Revision {
+		t.Fatal("restart cleared the durable deletion intent or confirmed snapshots")
+	}
+	if len(state.Jobs) != 3 {
+		t.Fatal("restart lost unfinished jobs")
+	}
 	for _, job := range state.Jobs {
 		if job.Status != "interrupted" || job.FinishedAt == nil {
 			t.Fatal("unfinished task was not marked interrupted")
+		}
+		if job.ID == "deleting-job" && (job.RelayID != relay.ID || job.Revision != "") {
+			t.Fatal("interrupted deletion lost its persisted relay target or claimed success")
 		}
 	}
 	if state.Upstreams == nil || state.Relays == nil || state.Probes == nil || state.Subscriptions == nil {

@@ -15,6 +15,10 @@ func tag(prefix, id string) string {
 	b := sha256.Sum256([]byte(id))
 	return prefix + hex.EncodeToString(b[:12])
 }
+
+// RelayInboundTag identifies a relay in generated configurations and revisions.
+func RelayInboundTag(id string) string { return tag("relay-", id) }
+
 func blackhole() map[string]any {
 	return map[string]any{"tag": "default-deny", "protocol": "blackhole", "settings": map[string]any{}}
 }
@@ -71,7 +75,7 @@ func Generate(n model.Node, upstreams []model.Upstream, relays []model.Relay) ([
 			return nil, fmt.Errorf("relay %q references missing upstream", r.ID)
 		}
 		used[r.UpstreamID] = true
-		it := tag("relay-", r.ID)
+		it := RelayInboundTag(r.ID)
 		ot := tag("upstream-", r.UpstreamID)
 		inbound := relayInbound(r, it)
 		inbounds = append(inbounds, inbound)

@@ -4,7 +4,7 @@ import type { LucideIcon } from 'lucide-react'
 import { api } from './api'
 import { AppContext } from './context'
 import type { Bootstrap, Job, Page, ProbeJobs, State, Toast, ToastKind } from './types'
-import { accountSecretError, accountSecretHint, isRunning, probeKey, roleLabel, scopeState } from './utils'
+import { accountSecretError, accountSecretHint, isRunning, JobRegistry, mergeJobs, probeKey, roleLabel, scopeState } from './utils'
 import { AccountSecretInput, Alert, Button, Field, IconButton, Spinner } from './components/ui'
 import DashboardPage from './pages/Dashboard'
 import NodesPage from './pages/Nodes'
@@ -37,6 +37,7 @@ export default function App() {
   const [toasts, setToasts] = useState<Toast[]>([])
   const [probeJobs, setProbeJobs] = useState<ProbeJobs>({})
   const nextToast = useRef(0)
+  const jobRegistry = useRef(new JobRegistry())
   const pendingRefresh = useRef<Promise<void> | null>(null)
   const authenticated = useRef(false)
   const sessionUserID = useRef<string>()
@@ -56,6 +57,7 @@ export default function App() {
     sessionUserID.current = undefined
     sessionEpoch.current++
     pendingRefresh.current = null
+    jobRegistry.current.clear()
     setState(null)
     setStateError('')
     setRefreshing(false)
@@ -101,7 +103,10 @@ export default function App() {
     const promise = api<State>('/api/state').then(data => {
       if (authenticated.current && epoch === sessionEpoch.current) {
         if (!data.current_user || sessionUserID.current && data.current_user.id !== sessionUserID.current) throw new Error('当前账户已变化，请重新登录。')
-        setState(scopeState(data))
+        const scoped = scopeState(data)
+        const { jobs, notices } = jobRegistry.current.reconcile(scoped.jobs)
+        setState({ ...scoped, jobs })
+        notices.forEach(notice => toast(notice.message, notice.kind))
         setStateError('')
         setUpdatedAt(new Date())
       }
@@ -113,7 +118,7 @@ export default function App() {
     })
     pendingRefresh.current = promise
     return promise
-  }, [])
+  }, [toast])
   useEffect(() => { if (bootstrap?.authenticated) void refresh().catch(() => undefined) }, [bootstrap?.authenticated, bootstrap?.user?.id, refresh])
   useEffect(() => {
     if (!bootstrap?.authenticated || !state) return
@@ -123,6 +128,11 @@ export default function App() {
   }, [bootstrap?.authenticated, state, probeJobs, refresh])
 
   const navigate = useCallback((next: Page) => { window.location.hash = next; setPage(next); setMobileOpen(false); window.scrollTo(0, 0) }, [])
+  const registerJob = useCallback((job: Job) => {
+    if (!authenticated.current) return
+    const submitted = jobRegistry.current.register(job)
+    setState(current => current ? { ...current, jobs: mergeJobs(current.jobs, [submitted]) } : current)
+  }, [])
   const registerProbe = useCallback((nodeID: string, upstreamID: string, job: Job) => setProbeJobs(current => ({ ...current, [probeKey(nodeID, upstreamID)]: { job, started_at: job.created_at || new Date().toISOString() } })), [])
   useEffect(() => { if (bootstrap?.authenticated && user && !isAdmin && page === 'users') navigate('dashboard') }, [bootstrap?.authenticated, user, isAdmin, page, navigate])
 
@@ -164,7 +174,7 @@ export default function App() {
       </header>
       <main id="main-content" className="main-content">
         {stateError && <div className="connection-error"><Alert tone="danger" title="数据更新失败">{stateError} {state ? '当前展示上次成功获取的数据。' : ''}<button className="inline-link" disabled={refreshing} onClick={() => void refresh().catch(() => undefined)}>重试</button></Alert></div>}
-        {state ? <AppContext.Provider key={state.current_user.id} value={{ state, refreshing, refresh, navigate, toast, probeJobs, registerProbe }}><CurrentPage /></AppContext.Provider> : <div className="page-loading" role="status"><Spinner size={26} /><h2>正在读取工作空间</h2><p>获取入口节点、出口节点与转发配置…</p></div>}
+        {state ? <AppContext.Provider key={state.current_user.id} value={{ state, refreshing, refresh, navigate, toast, probeJobs, registerProbe, registerJob }}><CurrentPage /></AppContext.Provider> : <div className="page-loading" role="status"><Spinner size={26} /><h2>正在读取工作空间</h2><p>获取入口节点、出口节点与转发配置…</p></div>}
         <footer className="page-footer"><span>Xray Relay Panel · 转发管理工作空间</span><span>{updatedAt ? `数据更新于 ${updatedAt.toLocaleTimeString('zh-CN', { hour12: false })}` : '等待服务响应'}</span></footer>
       </main>
     </div>

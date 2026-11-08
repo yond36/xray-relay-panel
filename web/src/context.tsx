@@ -9,6 +9,7 @@ interface AppContextValue {
   toast: (message: string, kind?: ToastKind) => void
   probeJobs: ProbeJobs
   registerProbe: (nodeID: string, upstreamID: string, job: Job) => void
+  registerJob: (job: Job) => void
 }
 export const AppContext = createContext<AppContextValue | null>(null)
 export function useApp() {

@@ -43,13 +43,16 @@ jobs:
 
           中文 Xray 中转面板，支持入口节点、出口节点、转发管理、多用户、官方核心版本手动选择和 VLESS-REALITY 默认入口。
 
-          新建转发从 `10000..65535` 随机选择监听端口，避开同一入口节点已保存转发的端口；点击“随机端口”可重新抽取，手动填写的端口和编辑已有转发的端口保留。随机选择只参考已保存转发，系统监听冲突仍在应用节点配置时检查。
+          已应用转发支持直接删除：点击删除并确认后，面板自动应用排除此规则的入口配置，并处理节点侧及面板中的相关回滚引用，成功后才删除记录。未部署的规则继续即时删除。
 
-          新建 REALITY 的默认 target / SNI 改为 `www.cloudflare.com:443` / `www.cloudflare.com`，与后端默认值一致。隔离测试中，Xray-core `v26.6.27` 配合微软目标失败、配合 Cloudflare 目标成功；`v26.10.31` 配合两者均成功。
+          删除任务有独立进度和结果，失败或中断时保留规则及凭据，可直接重试。删除会同时应用该入口其他待生效配置，现有连接可能短暂重连；无需先手动禁用并应用。删除意图持久化，未完成协调时阻止使用不确定的回滚配置。
 
-          本次线上验收保持服务端核心为 `v26.6.27`，仅将既有 REALITY 转发的 target / SNI 从微软目标切换为 Cloudflare。外部官方 Xray 客户端 `v26.10.31`、`v1.8.24` 的 VLESS 请求及 Shadowsocks 对照请求均成功，观察到相同出口 IP；既有端口、UUID、密钥、short ID、flow 与出口选择保留，原有 x-ui / Xray 服务的 unit、进程与配置未变化。本次结果限于记录中的环境与请求，验证记录见 [docs/verification-{tag}.md](https://github.com/yond36/xray-relay-panel/blob/{tag}/docs/verification-{tag}.md)。
+          删除最后一条转发后应用无入口、默认拒绝的配置。配置和节点操作继续限定于面板自己的独立中转服务。验证范围及结果见 [docs/verification-{tag}.md](https://github.com/yond36/xray-relay-panel/blob/{tag}/docs/verification-{tag}.md)。
 
-          升级后请刷新浏览器页面，加载新版表单。默认值调整作用于新建转发；已有 REALITY 转发如需切换目标，请修改 target / SNI 并应用节点配置，再重新复制分享链接或刷新客户端订阅，以更新客户端 SNI。保存或出口探测不代表目标站已通过 REALITY 兼容性验证。
+          升级后请刷新浏览器页面，加载新版删除流程：
+          ```sh
+          sudo xray-relay-panel upgrade --version {tag}
+          ```
 
           一键安装：
           ```sh

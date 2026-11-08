@@ -45,17 +45,22 @@ type Session struct {
 	ExpiresAt time.Time
 }
 
-// Applied records the last two successful deployments. This lets the API
-// protect active relays from deletion and accurately describe a rollback.
+// Applied records the last two confirmed deployments. PendingDeleteRelayID is
+// persisted before a remote deletion so an interrupted or uncommitted result
+// cannot use stale snapshots to roll back until an explicit apply or retry.
 type Applied struct {
-	ConfigHash  string   `json:"config_hash,omitempty"`
-	Revision    string   `json:"revision"`
-	RelayIDs    []string `json:"relay_ids"`
-	UpstreamIDs []string `json:"upstream_ids"`
-	Previous    *Applied `json:"previous,omitempty"`
+	ConfigHash           string   `json:"config_hash,omitempty"`
+	Revision             string   `json:"revision"`
+	RelayIDs             []string `json:"relay_ids"`
+	UpstreamIDs          []string `json:"upstream_ids"`
+	Previous             *Applied `json:"previous,omitempty"`
+	PendingDeleteRelayID string   `json:"pending_delete_relay_id,omitempty"`
 }
 
 func (a Applied) ReferencesRelay(id string) bool {
+	if a.PendingDeleteRelayID == id && id != "" {
+		return true
+	}
 	for _, candidate := range a.RelayIDs {
 		if candidate == id {
 			return true

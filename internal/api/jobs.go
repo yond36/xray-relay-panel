@@ -105,37 +105,70 @@ func (s *Server) enqueue(w http.ResponseWriter, r *http.Request, action, upstrea
 			writeError(w, http.StatusInternalServerError, "无法读取回滚记录")
 			return
 		}
-		if applied.Previous == nil {
-			writeError(w, http.StatusConflict, "没有可确认的上次成功部署，无法回滚")
+		if err := validateRollback(state, applied, node.ID); err != nil {
+			writeError(w, http.StatusConflict, err.Error())
 			return
 		}
-		if !rollbackReferencesPresent(state, *applied.Previous, node.ID) {
-			writeError(w, http.StatusConflict, "上次部署引用的规则或上游已被删除或移动，请重新应用当前配置")
-			return
-		}
+	}
+	job := model.Job{OwnerID: node.OwnerID, NodeID: node.ID, Action: action}
+	if action == "probe" {
+		job.UpstreamID = upstreamID
+	}
+	s.enqueueJob(w, r, job)
+}
+
+// enqueueJob requires s.mu and all action-specific permission and busy checks.
+func (s *Server) enqueueJob(w http.ResponseWriter, r *http.Request, job model.Job) {
+	if s.runtime == nil {
+		writeError(w, http.StatusServiceUnavailable, "节点运行时不可用")
+		return
+	}
+	if s.closing {
+		writeError(w, http.StatusServiceUnavailable, "服务正在关闭")
+		return
 	}
 	id, err := newID()
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "无法生成任务 ID")
 		return
 	}
-	job := model.Job{ID: id, OwnerID: node.OwnerID, NodeID: node.ID, Action: action, Status: "queued", Message: "等待节点任务执行", CreatedAt: time.Now().UTC()}
-	if action == "probe" {
-		job.UpstreamID = upstreamID
-	}
+	job.ID, job.Status, job.Message, job.CreatedAt = id, "queued", "等待节点任务执行", time.Now().UTC()
 	if !s.commit(w, r, store.Changes{Jobs: []model.Job{job}}) {
 		return
 	}
-	queue, exists := s.workers[node.ID]
+	queue, exists := s.workers[job.NodeID]
 	if !exists {
 		queue = make(chan task, 16)
-		s.workers[node.ID] = queue
+		s.workers[job.NodeID] = queue
 		s.wg.Add(1)
 		go s.worker(queue)
 	}
-	s.busy[node.ID]++
+	s.busy[job.NodeID]++
 	queue <- task{job: job}
 	writeJSON(w, http.StatusAccepted, job)
+}
+
+func validateRollback(state model.State, applied store.Applied, nodeID string) error {
+	if applied.PendingDeleteRelayID != "" {
+		return errors.New("节点有尚未确认的删除部署，请重新应用当前配置或重试删除后再回滚")
+	}
+	if applied.Previous == nil {
+		return errors.New("没有可确认的上次成功部署，无法回滚")
+	}
+	if !rollbackReferencesPresent(state, *applied.Previous, nodeID) {
+		return errors.New("上次部署引用的规则或上游已被删除或移动，请重新应用当前配置")
+	}
+	return nil
+}
+
+func relaysWithout(relays []model.Relay, id string) []model.Relay {
+	values := make([]model.Relay, 0, len(relays))
+	for _, relay := range relays {
+		if relay.ID != id {
+			values = append(values, relay)
+		}
+	}
+	return values
 }
 
 func rollbackReferencesPresent(state model.State, snapshot store.Applied, nodeID string) bool {
@@ -202,9 +235,31 @@ func (s *Server) execute(work task) {
 			executionErr = nil
 		}
 	}
+	if executionErr == nil && work.job.Action == "rollback" {
+		// The preceding task can replace or invalidate Previous after enqueue.
+		executionErr = validateRollback(state, prior, node.ID)
+	}
+	if executionErr == nil && work.job.Action == "delete-relay" {
+		relay, found := relayByID(state, work.job.RelayID)
+		if !found || relay.NodeID != node.ID || relay.OwnerID != node.OwnerID || work.job.OwnerID != node.OwnerID {
+			executionErr = errors.New("待删除的入口规则不存在或已不属于此节点")
+		} else if _, supported := s.runtime.(model.RelayDeleter); !supported {
+			executionErr = errors.New("节点运行时不支持安全删除已部署入口，请升级运行时后重试")
+		} else {
+			_, executionErr = xray.Generate(node, state.Upstreams, relaysWithout(state.Relays, relay.ID))
+		}
+	}
 	if executionErr == nil {
 		work.job.Status, work.job.Message = "running", "正在节点上执行"
-		executionErr = s.store.Commit(s.ctx, store.Changes{Jobs: []model.Job{work.job}})
+		changes := store.Changes{Jobs: []model.Job{work.job}}
+		if work.job.Action == "delete-relay" {
+			// Keep the last confirmed snapshots, but block rollback before any
+			// remote side effect. Only a committed apply/delete clears intent.
+			intent := prior
+			intent.PendingDeleteRelayID = work.job.RelayID
+			changes.Applied = map[string]store.Applied{node.ID: intent}
+		}
+		executionErr = s.store.Commit(s.ctx, changes)
 	}
 	s.mu.Unlock()
 	if executionErr != nil {
@@ -212,14 +267,18 @@ func (s *Server) execute(work task) {
 		return
 	}
 	timeout := 2 * time.Minute
-	if work.job.Action == "apply" {
+	if work.job.Action == "apply" || work.job.Action == "delete-relay" {
 		timeout = 15 * time.Minute
 	}
 	ctx, cancel := context.WithTimeout(s.ctx, timeout)
 	defer cancel()
 	switch work.job.Action {
-	case "apply":
-		result, executionErr = s.runtime.Apply(ctx, node, state.Upstreams, state.Relays)
+	case "apply", "delete-relay":
+		if work.job.Action == "delete-relay" {
+			result, executionErr = s.runtime.(model.RelayDeleter).DeleteRelay(ctx, node, state.Upstreams, relaysWithout(state.Relays, work.job.RelayID), work.job.RelayID)
+		} else {
+			result, executionErr = s.runtime.Apply(ctx, node, state.Upstreams, state.Relays)
+		}
 		if executionErr == nil && strings.TrimSpace(result.Revision) == "" {
 			executionErr = errors.New("运行时未返回成功部署的 revision，远端状态需核对")
 		}
@@ -313,6 +372,7 @@ func (s *Server) finishTask(work task, node model.Node, state model.State, prior
 	job.FinishedAt = &now
 	job.Status, job.Message = "succeeded", "任务执行成功"
 	changes := store.Changes{}
+	originalNode := node
 	if executionErr != nil {
 		job.Status = "failed"
 		if s.ctx.Err() != nil {
@@ -328,24 +388,36 @@ func (s *Server) finishTask(work task, node model.Node, state model.State, prior
 		}
 	} else {
 		switch job.Action {
-		case "apply":
+		case "apply", "delete-relay":
 			job.Revision, job.Message = result.Revision, "配置已在节点应用并确认成功"
 			node.AppliedRevision, node.Status, node.LastError = result.Revision, "ready", ""
 			if result.CoreVersion != "" {
 				node.CoreVersion = result.CoreVersion
 			}
-			snapshot := deploymentSnapshot(node.ID, result.Revision, state.Relays)
-			snapshot.ConfigHash = desiredConfigHash(node, state)
-			if prior.Revision != "" {
-				prior.Previous = nil
-				snapshot.Previous = &prior
+			deployed := state
+			if job.Action == "delete-relay" {
+				deployed.Relays = relaysWithout(state.Relays, job.RelayID)
+				changes.DeleteRelays = []string{job.RelayID}
+				job.Message = "入口规则已从节点配置移除并删除"
+			}
+			snapshot := deploymentSnapshot(node.ID, result.Revision, deployed.Relays)
+			snapshot.ConfigHash = desiredConfigHash(node, deployed)
+			// An unresolved remote deletion makes the old current untrustworthy.
+			// Otherwise keep only that current, never its older Previous, and
+			// only when it cannot resurrect the relay being deleted.
+			if prior.Revision != "" && prior.PendingDeleteRelayID == "" {
+				previous := prior
+				previous.Previous = nil
+				if job.Action != "delete-relay" || !previous.ReferencesRelay(job.RelayID) {
+					snapshot.Previous = &previous
+				}
 			}
 			changes.Applied = map[string]store.Applied{node.ID: snapshot}
 		case "stop":
 			node.Status, node.LastError = "stopped", ""
 		case "start", "restart":
 			node.Status = "pending"
-			if prior.ConfigHash != "" && prior.ConfigHash == desiredConfigHash(node, state) {
+			if prior.PendingDeleteRelayID == "" && prior.ConfigHash != "" && prior.ConfigHash == desiredConfigHash(node, state) {
 				node.Status = "ready"
 			}
 			node.LastError = ""
@@ -387,10 +459,15 @@ func (s *Server) finishTask(work task, node model.Node, state model.State, prior
 		// A successful remote action with a failed local commit is explicitly
 		// recorded as unknown/failed, never reported as successful.
 		job.Status, job.Error, job.Message = "failed", "无法持久化执行结果，远端状态未知，请核对节点后重新执行", "无法持久化执行结果，远端状态未知，请核对节点后重新执行"
-		if node.ID != "" {
-			node.Status, node.LastError = "error", job.Error
+		job.Revision = ""
+		fallback := store.Changes{Jobs: []model.Job{job}}
+		if originalNode.ID != "" {
+			originalNode.Status, originalNode.LastError, originalNode.UpdatedAt = "error", job.Error, now
+			fallback.Nodes = []model.Node{originalNode}
 		}
-		_ = s.store.Commit(ctx, store.Changes{Jobs: []model.Job{job}, Nodes: changes.Nodes})
+		// Preserve the last confirmed revision and any durable deletion intent;
+		// no part of the successful result may escape the failed transaction.
+		_ = s.store.Commit(ctx, fallback)
 	}
 }
 

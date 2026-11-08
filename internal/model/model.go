@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-const Version = "0.2.6"
+const Version = "0.2.7"
 const DefaultCoreVersion = "v26.10.31"
 
 const (
@@ -99,6 +99,7 @@ type Job struct {
 	ID         string     `json:"id"`
 	NodeID     string     `json:"node_id"`
 	UpstreamID string     `json:"upstream_id,omitempty"`
+	RelayID    string     `json:"relay_id,omitempty"`
 	Action     string     `json:"action"`
 	Status     string     `json:"status"`
 	Message    string     `json:"message"`
@@ -168,6 +169,12 @@ type State struct {
 	Probes        []ProbeResult  `json:"probes"`
 	Subscriptions []Subscription `json:"subscriptions"`
 	Settings      Settings       `json:"settings"`
+}
+
+// RelayDeleter applies a candidate without the relay and removes rollback paths
+// that could restore it. A failed operation may already have changed the node.
+type RelayDeleter interface {
+	DeleteRelay(context.Context, Node, []Upstream, []Relay, string) (ApplyResult, error)
 }
 
 // Runtime owns only the panel's isolated Xray installation on each node.
